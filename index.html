@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HYUNMU — AI & Data Portfolio</title>
+  <meta name="description" content="구현무의 AI 자동화·데이터 분석 중심 포트폴리오">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+:root{--ink:#14243a;--muted:#64748b;--paper:#f5f7fb;--white:#fff;--line:#e3e9f2;--navy:#10243e;--lime:#c9f36a;--blue:#3978f6;--radius:22px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:85px}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Noto Sans KR",system-ui,sans-serif;line-height:1.65;letter-spacing:-.025em}a{color:inherit;text-decoration:none}
+.topbar{height:76px;padding:0 max(5vw,24px);display:flex;align-items:center;justify-content:space-between;gap:25px;background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;backdrop-filter:blur(16px)}.logo{font-weight:900;letter-spacing:-.07em;font-size:1.35rem;color:var(--navy)}.logo span,.cta h2 span{color:var(--blue)}.topbar nav{display:flex;gap:clamp(14px,3vw,34px)}.topbar nav a{font-size:.86rem;font-weight:700;color:#526176}.topbar nav a:hover,.link-row a:hover{color:var(--blue)}.status{font-size:.7rem;font-weight:800;color:#24603e;background:#eaf8ef;padding:8px 12px;border-radius:999px;white-space:nowrap}.status i,.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#29b36b;margin-right:6px}
+main{overflow:hidden}.hero{padding:clamp(70px,10vw,130px) max(5vw,24px) 45px;background:radial-gradient(circle at 78% 18%,rgba(57,120,246,.12),transparent 28%),linear-gradient(180deg,#fff,#f5f7fb)}.hero-grid{max-width:1160px;margin:auto;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:clamp(35px,7vw,90px)}.eyebrow,.kicker{font-size:.75rem;font-weight:800;letter-spacing:.15em;color:var(--blue);margin:0 0 18px}.hero h1{font-size:clamp(3.4rem,8vw,7.2rem);line-height:.92;letter-spacing:-.085em;margin:0;font-weight:900;color:var(--navy)}.hero h1 span{color:var(--blue)}.hero-copy{font-size:clamp(1rem,1.6vw,1.2rem);color:#5d6b7f;margin:27px 0;line-height:1.9}.hero-actions{display:flex;gap:12px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 19px;border-radius:11px;font-size:.8rem;font-weight:800;transition:.2s}.btn:hover{transform:translateY(-2px)}.btn.primary{background:var(--blue);color:white;box-shadow:0 9px 20px #3978f638}.btn.ghost{border:1px solid #d6dfeb;background:white;color:var(--navy)}
+.hero-panel{background:linear-gradient(145deg,#122b49,#0b1b30);border-radius:23px;padding:clamp(24px,3vw,38px);color:white;box-shadow:0 28px 65px #10243e30}.panel-top,.signal-line{display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-top{font-size:.68rem;letter-spacing:.13em;color:#b8c9dd;padding-bottom:22px;border-bottom:1px solid #ffffff20}.panel-top b,.signal-line strong{color:var(--lime);font-size:.67rem}.signal{padding:20px 0}.signal-line{font-size:.69rem;letter-spacing:.07em;color:#d3deea;margin:18px 0 8px}.meter{height:5px;border-radius:9px;background:#ffffff20;overflow:hidden}.meter i{display:block;height:100%;background:linear-gradient(90deg,#4e8cff,var(--lime));border-radius:9px}.terminal{display:grid;gap:8px;padding:16px;background:#0003;border:1px solid #ffffff17;border-radius:11px;color:#9fb4ce;font:.74rem/1.5 ui-monospace,monospace}.terminal b{color:var(--lime)}.scroll-note{max-width:1160px;margin:48px auto 0;color:#8b98aa;font-size:.65rem;font-weight:800;letter-spacing:.17em}
+.section{padding:clamp(65px,9vw,110px) max(5vw,24px)}.section>*{max-width:1160px;margin-left:auto;margin-right:auto}.section-head{display:flex;justify-content:space-between;gap:20px;color:#8b98aa;font-size:.67rem;letter-spacing:.13em;font-weight:800;padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:44px}.section-head.light{color:#9fb1c6;border-color:#ffffff24}.about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(30px,8vw,110px);align-items:start}.about h2,.report-intro h2,.activity-lead h2{font-size:clamp(2.2rem,4.5vw,4rem);line-height:1.18;letter-spacing:-.07em;margin:0;font-weight:900}.about-copy{color:#58677c}.about-copy p{margin:0 0 16px}.link-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:26px}.link-row a{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--navy)}
+.reports,.activities{background:var(--navy);color:white}.report-intro{display:grid;grid-template-columns:1fr .8fr;gap:48px;align-items:end;margin-bottom:40px}.kicker.lime{color:var(--lime)}.report-intro h2{font-size:clamp(2.5rem,5vw,4.5rem)}.report-summary{color:#bdc9d8;max-width:430px;margin:0 0 6px;line-height:1.9}.report-card{max-width:1160px;margin:0 auto;background:white;color:var(--ink);border-radius:var(--radius);padding:clamp(22px,4vw,40px);box-shadow:0 25px 60px #0002}.report-card-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.tag{font-size:.66rem;font-weight:900;letter-spacing:.1em;color:#34506f;background:#edf3fa;border-radius:999px;padding:7px 11px}.live{font-size:.64rem;font-weight:800;color:#39744e;letter-spacing:.08em}.report-main{display:grid;grid-template-columns:1fr auto;gap:26px;align-items:end;margin-top:30px}.report-main h3{font-size:clamp(1.5rem,3vw,2.3rem);line-height:1.2;letter-spacing:-.055em;margin:0 0 10px;color:var(--navy)}.report-main p{margin:0;color:var(--muted);font-size:.88rem}.metrics{display:flex;gap:clamp(14px,3vw,32px)}.metrics div{display:grid;gap:3px}.metrics strong{font-size:1.2rem;color:var(--blue)}.metrics span{font-size:.58rem;color:#8290a3;letter-spacing:.08em;font-weight:800}.report-links-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}.report-link{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;color:#263d58;font-weight:750;font-size:.82rem;transition:.2s}.report-link span{color:var(--blue)}.report-link:hover{border-color:#9bbcff;background:#f4f8ff;transform:translateY(-1px)}.future-grid{max-width:1160px;margin:18px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.future-grid>div{border:1px solid #ffffff22;border-radius:14px;padding:20px;background:#ffffff08;display:grid;gap:7px}.future-grid span{color:var(--lime);font-size:.73rem;font-weight:900}.future-grid strong{font-size:.78rem;letter-spacing:.06em}.future-grid small{font-size:.75rem;color:#a9b9cc}
+.qualification-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(30px,8vw,95px)}.qualifications h1{font-size:clamp(2.3rem,4vw,3.7rem);line-height:1.2;letter-spacing:-.07em;margin:0}.cert-list{border-top:1px solid var(--line)}.cert{display:grid;grid-template-columns:38px 1fr auto;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}.cert>b{color:var(--blue);font-size:.73rem}.cert span{font-weight:750}.cert small{font-size:.68rem;color:#8491a3}.cert-list>.report-link{margin-top:18px}.muted{color:var(--muted)}
+.activity-grid{display:grid;grid-template-columns:.75fr 1.25fr;gap:clamp(30px,8vw,95px)}.activity-lead h2{font-size:clamp(2.4rem,4.5vw,4rem)}.timeline{border-top:1px solid #ffffff24}.timeline-item,.activity-item{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:24px 0;border-bottom:1px solid #ffffff24}.timeline-item>span,.activity-label{color:var(--lime);font-size:.68rem;font-weight:800;letter-spacing:.08em}.timeline-item b{font-size:.98rem}.timeline-item p,.project-description{margin:6px 0 0;color:#b4c3d4;font-size:.85rem;line-height:1.8}.project-category{font-size:.65rem;color:var(--lime);font-weight:800;letter-spacing:.1em}.project-title{font-size:1.5rem;margin:7px 0;color:white;letter-spacing:-.04em}.project-link{display:inline-flex;margin-top:15px;padding:9px 12px;border-radius:8px;background:#ffffff19;font-size:.73rem;font-weight:800}.project-link:hover{background:#ffffff2b}
+.cta{text-align:center;padding:clamp(65px,10vw,115px) 24px;background:#eaf0f8}.cta>p{font-size:.68rem;font-weight:900;letter-spacing:.17em;color:#64748b}.cta h2{font-size:clamp(3rem,7vw,6rem);letter-spacing:-.08em;line-height:1;margin:20px 0 30px;color:var(--navy)}.cta>div{display:flex;justify-content:center;gap:22px;flex-wrap:wrap}.cta a{font-size:.74rem;font-weight:850;color:#3e5068}.cta a:hover{color:var(--blue)}footer{text-align:center;padding:22px;background:#eaf0f8;color:#8794a7;font-size:.65rem;letter-spacing:.06em;border-top:1px solid #dce4ef}
+@media(max-width:800px){.topbar{height:auto;min-height:68px;flex-wrap:wrap;padding:14px 22px;gap:12px}.topbar nav{order:3;width:100%;overflow:auto;padding:4px 0}.topbar nav a{white-space:nowrap}.status{margin-left:auto}.hero-grid,.about-grid,.report-intro,.qualification-grid,.activity-grid{grid-template-columns:1fr}.hero-grid{gap:40px}.report-intro{gap:18px}.report-main{grid-template-columns:1fr}.future-grid{grid-template-columns:1fr}.report-links-group{grid-template-columns:1fr}.section-head{margin-bottom:32px}.scroll-note{margin-top:35px}}
+@media(max-width:480px){.hero{padding-top:60px}.hero h1{font-size:clamp(3.1rem,17vw,5rem)}.section{padding-top:58px;padding-bottom:58px}.section-head{font-size:.58rem}.metrics{gap:17px}.metrics strong{font-size:1rem}.metrics span{font-size:.5rem}.cert{grid-template-columns:30px 1fr}.cert small{grid-column:2}.timeline-item,.activity-item{grid-template-columns:1fr;gap:8px}.cta>div{gap:14px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+
+/* Chapter 03: highlighted additional qualification */
+.cert-feature{margin-top:22px;padding:20px 21px;border:1px solid #cbdcff;border-radius:15px;background:linear-gradient(135deg,#f2f7ff 0%,#fff 75%);box-shadow:0 10px 28px rgba(57,120,246,.08);position:relative;overflow:hidden}
+.cert-feature:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue)}
+.cert-feature-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:13px;border-bottom:1px solid #dce7f8;color:var(--blue);font-size:.63rem;font-weight:900;letter-spacing:.12em}
+.cert-feature-number{font-size:.72rem;color:#8aa8e8}
+.cert-feature-body{display:flex;align-items:flex-start;gap:14px;padding-top:17px}
+.cert-feature-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;background:var(--blue);color:#fff;border-radius:12px;font-size:1.2rem;box-shadow:0 7px 15px rgba(57,120,246,.22)}
+.cert-feature-copy{min-width:0}.cert-feature-label{margin:0 0 5px;color:#6b83a5;font-size:.61rem;font-weight:850;letter-spacing:.08em}
+.cert-feature-copy h3{margin:0;color:var(--navy);font-size:1.13rem;line-height:1.4;letter-spacing:-.035em}
+.cert-feature-copy>p:not(.cert-feature-label){margin:5px 0 13px;color:#64748b;font-size:.78rem}
+.cert-feature-copy a{display:inline-flex;align-items:center;gap:8px;color:var(--blue);font-size:.74rem;font-weight:850}
+.cert-feature-copy a span{font-size:.95rem;transition:transform .2s}.cert-feature-copy a:hover span{transform:translate(2px,-2px)}
+/* Chapter 04: make AI-QUIZ the primary project subchapter */
+.activity-item.featured-project{grid-template-columns:110px minmax(0,1fr);padding:26px 22px;margin:0 0 18px;border:1px solid rgba(201,243,106,.42);border-radius:16px;background:linear-gradient(115deg,rgba(201,243,106,.10),rgba(255,255,255,.045) 62%);box-shadow:0 14px 35px rgba(0,0,0,.12);position:relative;overflow:hidden}
+.featured-project:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--lime)}
+.featured-project .activity-label{color:var(--lime);font-size:.64rem;line-height:1.5}
+.featured-project .project-category{display:inline-flex;padding:5px 9px;border:1px solid rgba(201,243,106,.28);border-radius:999px;background:rgba(201,243,106,.08);color:var(--lime);font-size:.61rem}
+.featured-project .project-title{font-size:clamp(1.8rem,3vw,2.25rem);margin:10px 0 8px;letter-spacing:-.055em}
+.featured-project .project-description{max-width:560px;font-size:.9rem;line-height:1.85;color:#d0dbea}
+.featured-project .project-link{margin-top:18px;padding:10px 14px;background:var(--lime);color:#13243a;border:1px solid var(--lime);font-size:.73rem;box-shadow:0 7px 18px rgba(201,243,106,.12)}
+.featured-project .project-link:hover{background:#d8ff86;transform:translateY(-2px)}
+@media(max-width:800px){.activity-item.featured-project{grid-template-columns:1fr;gap:10px;padding:22px 18px}.cert-feature{padding:17px}}
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="#top">HYUNMU<span>.</span></a>
+    <nav aria-label="주요 메뉴">
+      <a href="#about">About</a>
+      <a href="#reports">AI Reports</a>
+      <a href="#qualifications">Qualifications</a>
+      <a href="#activities">Activities</a>
+    </nav>
+    <a class="status" href="#reports"><i></i> AI / DATA</a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">PORTFOLIO / 2026</p>
+          <h1>BUILD.<br><span>ANALYZE.</span><br>AUTOMATE.</h1>
+          <p class="hero-copy">
+            현장에서 쌓은 실무 경험을 바탕으로<br>
+            AI 자동화와 데이터 분석하여<br>다양하고 새로운 영역 확장을 이룹니다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#reports">VIEW AI REPORTS ↗</a>
+            <a class="btn ghost" href="https://elwlrma486-design.github.io/hyunmu-ku/" target="_blank" rel="noopener">RESUME ↗</a>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="panel-top"><span>SYSTEM STATUS</span><b>ONLINE</b></div>
+          <div class="signal">
+            <div class="signal-line"><span>AI AUTOMATION</span><strong>ACTIVE</strong></div>
+            <div class="meter"><i style="width:88%"></i></div>
+            <div class="signal-line"><span>DATA ANALYSIS</span><strong>ACTIVE</strong></div>
+            <div class="meter"><i style="width:76%"></i></div>
+            <div class="signal-line"><span>FIELD EXPERIENCE</span><strong>ACTIVE</strong></div>
+            <div class="meter"><i style="width:94%"></i></div>
+          </div>
+          <div class="terminal">
+            <span>&gt; portfolio.init()</span>
+            <span>&gt; reports.load("DART")</span>
+            <span>&gt; automation.run()</span>
+            <b>&gt; ready_</b>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-note">SCROLL TO EXPLORE ↓</div>
+    </section>
+
+    <section id="about" class="section about">
+      <div class="section-head">
+        <span>01 / ABOUT</span>
+        <span>PROFILE</span>
+      </div>
+      <div class="about-grid">
+        <div>
+          <p class="kicker">구현무 / HYUNMU KU</p>
+          <h2>현장을 이해하고,<br>기술로 연결합니다.</h2>
+        </div>
+        <div class="about-copy">
+          <p>한림성심대학교 방사선과 재학. 전자과 기반의 기술 경험에서 출발해 병원 관리부 실무, 시설·기자재 관리, 유지보수와 현장 업무를 경험했습니다.</p>
+          <p>현재는 이러한 실무 경험을 바탕으로 AI 자동화, 기업 데이터 분석, 웹 대시보드 구축까지 직접 구현하는 방향으로 역량을 확장하고 있습니다.</p>
+          <div class="link-row">
+            <a href="https://github.com/elwlrma486-design/hyunmu-ku" target="_blank" rel="noopener">GITHUB ↗</a>
+            <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener">LINKEDIN ↗</a>
+            <a href="https://elwlrma486-design.github.io/hyunmu-ku/" target="_blank" rel="noopener">RESUME ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reports" class="section reports">
+      <div class="section-head light">
+        <span>02 / AI-GENERATED REPORTS</span>
+        <span>LIVE PROJECT</span>
+      </div>
+      <div class="report-intro">
+        <div>
+          <p class="kicker lime">AI × DATA × AUTOMATION</p>
+          <h2>데이터를 모으고,<br>분석하고,<br>보여줍니다.</h2>
+        </div>
+        <p class="report-summary">DART 기업공시 데이터를 자동 수집하고 핵심 재무지표를 계산·분석해 웹 대시보드로 제공하는 프로젝트를 중심으로 AI 자동화 결과물을 확장하고 있습니다.</p>
+      </div>
+
+      <article class="report-card">
+        <div class="report-card-top">
+          <span class="tag">PROJECT 01</span>
+          <span class="live"><i></i> GITHUB PAGES</span>
+        </div>
+        <div class="report-main">
+          <div>
+            <h3>Republic of Korea <br>semiconductor company Analysis</h3>
+            <p>OpenDART 기반 사업보고서 데이터 기반</p>
+          </div>
+          <div class="metrics">
+            <div><strong>10Y</strong><span>DATA RANGE</span></div>
+            <div><strong>DART</strong><span>DATA SOURCE</span></div>
+            <div><strong>AUTO</strong><span>UPDATE FLOW</span></div>
+          </div>
+          <div class="report-links-group">
+    <a class="report-link" href="https://elwlrma486-design.github.io/Hyunmu-Samsung/" target="_blank" rel="noopener">
+      1. 삼성전자 OPEN ANALYSIS <span>↗</span>
+    </a>
+    <a class="report-link" href="https://elwlrma486-design.github.io/Hyunmu-SK_Hynix/" target="_blank" rel="noopener">
+      2. SK하이닉스 OPEN ANALYSIS <span>↗</span>
+    </a>
+    <a class="report-link" href="https://elwlrma486-design.github.io/Hyunmu-LG/" target="_blank" rel="noopener">
+      3. LG전자 OPEN ANALYSIS <span>↗</span>
+    </a>
+    <a class="report-link" href="https://elwlrma486-design.github.io/Hyunmu-DBhitek/" target="_blank" rel="noopener">
+      4. DB하이텍 OPEN ANALYSIS <span>↗</span>
+    </a>
+      </div>
+      </article>
+
+      <div class="future-grid">
+        <div><span>02</span><strong>NEW REPORT</strong><small>자동화 분석 결과물 확장 예정</small></div>
+        <div><span>03</span><strong>NEW DATA</strong><small>기업·산업 데이터 프로젝트 확장 예정</small></div>
+        <div><span>04</span><strong>AI WORKFLOW</strong><small>수집부터 리포트 생성까지 자동화</small></div>
+      </div>
+    </section>
+
+    <section id="qualifications" class="section qualifications">
+      <div class="section-head">
+        <span>03 / QUALIFICATION</span>
+        <span>CERTIFICATIONS</span>
+      </div>
+      <div class="qualification-grid">
+        <div>
+          <p class="kicker">TECHNICAL BASE</p>
+          <h1>기술의 기반이 되는<br>자격과 경험.</h1>
+          <p class="muted"></p>
+        </div>
+        <div class="cert-list">
+          <div class="cert"><b>01</b><span>항공전자정비 기능사</span><small>Certification</small></div>
+          <div class="cert"><b>02</b><span>승강기 기능사</span><small>Certification</small></div>
+          <div class="cert"><b>03</b><span>승강기 산업기사</span><small>Certification</small></div>
+          <div class="cert"><b>04</b><span>ITQ 한글 / 파워포인트 A</span><small>Certification</small></div>
+          <div class="cert"><b>05</b><span>운전면허 1종보통</span><small>License</small></div>
+          <div class="cert"><b>06</b><span>한림성심대학교 방사선과</span><small>2026 — 재학</small></div>
+<div class="cert-feature">
+  <div class="cert-feature-top"><span>ADDITIONAL LEARNING</span><span class="cert-feature-number">07</span></div>
+  <div class="cert-feature-body">
+    <div class="cert-feature-icon" aria-hidden="true">✦</div>
+    <div class="cert-feature-copy">
+      <p class="cert-feature-label">COURSERA · GLOBAL MOOC</p>
+      <h3>AI 윤리 교육 수료</h3>
+      <p>Global MOOC on the Ethics of AIS</p>
+      <a href="https://lnkd.in/p/dHBA3_3d" target="_blank" rel="noopener noreferrer">수료 과정 보기 <span>↗</span></a>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="activities" class="section activities">
+      <div class="section-head light">
+        <span>04 / ACTIVITIES</span>
+        <span>EXPERIENCE</span>
+      </div>
+      <div class="activity-grid">
+        <div class="activity-lead">
+          <p class="kicker lime">FIELD → DATA → AI</p>
+          <h2>다양한 경험 <br><br>새로운 방향</h2>
+        </div>
+        <div class="timeline">
+          <!-- AI-QUIZ PROJECT -->
+<div class="activity-item featured-project">
+  <div class="activity-label">FEATURED PROJECT</div>
+
+  <div class="activity-content">
+    <span class="project-category">AI → WEB</span>
+
+    <h3 class="project-title">AI-QUIZ</h3>
+
+    <p class="project-description">
+      AI 기반 퀴즈 생성 서비스로, PDF 학습 자료를 활용해
+      다양한 유형의 퀴즈를 만들 수 있습니다.
+    </p>
+
+    <a
+      href="https://elwlrma486-design.github.io/AI-QUIZ/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="project-link"
+    >
+      프로젝트 바로가기 ↗
+    </a>
+  </div>
+</div>
+          <div class="timeline-item"><span>2026 —</span><div><b>한림성심대학교 방사선과</b><p>전공 학업과 함께 기술·데이터 역량 확장</p></div></div>
+          <div class="timeline-item"><span>2022 — 2026</span><div><b>서울튼튼신경외과의원 / 관리부</b><p>병원 운영, 기자재 관리, 원무, 시설관리 및 유지보수 실무</p></div></div>
+          <div class="timeline-item"><span>FIELD</span><div><b>다양한 현장 경험</b><p>시설·정비·공사·매장 운영 등 다양한 환경에서 실무 경험</p></div></div>
+          <div class="timeline-item"><span>NEXT</span><div><b>AI 자동화 & 데이터 프로젝트</b><p>기업 분석, 공시 데이터, 자동화 리포트 및 웹 대시보드 구축</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <p>LET'S BUILD THE NEXT WORKFLOW.</p>
+      <h2>HYUNMU<span>.</span></h2>
+      <div>
+        <a href="https://github.com/elwlrma486-design/hyunmu-ku" target="_blank" rel="noopener">GITHUB ↗</a>
+        <a href="https://www.linkedin.com/feed/" target="_blank" rel="noopener">LINKEDIN ↗</a>
+        <a href="mailto:elwlrma486@naver.com">EMAIL ↗</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 HYUNMU KU — AI & DATA PORTFOLIO</footer>
+   </body>          
+</html>
