@@ -411,4 +411,139 @@
       dbhitek: {
         name: "DB하이텍 (DB HiTek)",
         subtitle: "8인치/12인치 파운드리 및 전력반도체(PMIC) 특화 기업",
-        q3Rev: "1.45
+        q3Rev: "1.45조 원",
+        q3Profit: "0.38조 원",
+        opm: "26.2%",
+        facts: [
+          "전방 IT 기기 재고 소진 완료에 따른 파운드리 가동률 85% 이상 회복.",
+          "자동차 및 산업용 PMIC, SiC/GaN 차세대 전력반도체 매출 비중 증가.",
+          "낮은 부채비율과 견조한 유동성을 바탕으로 12인치 전환 투자 진행 중."
+        ]
+      },
+      lg: {
+        name: "LG전자 (LG Electronics)",
+        subtitle: "전장(VS) 및 AI 데이터센터 냉각 솔루션(칠러) 연계 기업",
+        q3Rev: "89.5조 원",
+        q3Profit: "4.8조 원",
+        opm: "5.4%",
+        facts: [
+          "순수 반도체 기업은 아니나 AI 데이터센터용 '칠러(Chiller)' 수주 폭발적 증가.",
+          "전장(VS) 사업부 수주잔고 확대에 따른 반도체 밸류체인 수혜 누적.",
+          "B2B 사업 비중 확대로 가전 경기 변동성 완화 및 안정적 현금흐름 창출."
+        ]
+      }
+    };
+
+    function showCompany(key) {
+      const data = companyData[key];
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      
+      event.target.classList.add('active');
+
+      const html = `
+        <div class="detail-header">
+          <div>
+            <h2>${data.name}</h2>
+            <p>${data.subtitle}</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--muted);">2026 Q3 영업이익률</div>
+            <div style="font-size: 1.6rem; font-weight: 900; color: var(--lime);">${data.opm}</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+          <div><span style="color:var(--muted); font-size:0.8rem;">분기 매출:</span> <strong>${data.q3Rev}</strong></div>
+          <div><span style="color:var(--muted); font-size:0.8rem;">분기 영업이익:</span> <strong>${data.q3Profit}</strong></div>
+        </div>
+
+        <div class="fact-box">
+          <strong>2026년 10월 핵심 팩트체크:</strong>
+          <ul style="margin-left: 20px; margin-top: 8px;">
+            ${data.facts.map(f => `<li style="margin-bottom:4px;">\${f}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+
+      document.getElementById('company-display').innerHTML = html;
+    }
+
+    // Initialize Default Tab
+    window.onload = function() {
+      showCompany('samsung');
+      initCharts();
+    };
+
+    // Chart.js Setup
+    function initCharts() {
+      // 1. Revenue & Profit Chart
+      const ctx1 = document.getElementById('revenueChart').getContext('2d');
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['삼성전자', 'SK하이닉스', 'LG전자', 'DB하이텍'],
+          datasets: [
+            {
+              label: '매출액 (조 원)',
+              data: [195.0, 100.0, 89.5, 1.45],
+              backgroundColor: '#3978f6'
+            },
+            {
+              label: '영업이익 (조 원)',
+              data: [107.4, 79.2, 4.8, 0.38],
+              backgroundColor: '#c9f36a'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: '#e2e8f0' } }
+          },
+          scales: {
+            x: { ticks: { color: '#8b9bb4' }, grid: { color: '#1d385c' } },
+            y: { ticks: { color: '#8b9bb4' }, grid: { color: '#1d385c' } }
+          }
+        }
+      });
+
+      // 2. Margin Chart
+      const ctx2 = document.getElementById('marginChart').getContext('2d');
+      new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: ['삼성전자', 'SK하이닉스', 'DB하이텍', 'LG전자'],
+          datasets: [
+            {
+              label: '영업이익률 (%)',
+              data: [55.1, 79.2, 26.2, 5.4],
+              borderColor: '#c9f36a',
+              backgroundColor: 'rgba(201, 243, 106, 0.2)',
+              borderWidth: 3,
+              fill: true
+            },
+            {
+              label: 'R&D 투자비율 (%)',
+              data: [10.2, 11.5, 8.4, 4.1],
+              borderColor: '#3978f6',
+              borderWidth: 2,
+              borderDash: [5, 5]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: '#e2e8f0' } }
+          },
+          scales: {
+            x: { ticks: { color: '#8b9bb4' }, grid: { color: '#1d385c' } },
+            y: { ticks: { color: '#8b9bb4' }, grid: { color: '#1d385c' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
