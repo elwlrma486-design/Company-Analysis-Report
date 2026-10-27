@@ -3,466 +3,576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HYUNMU — AI 자동 기업분석 및 10년 재무제표 리포트</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <title>Hyunmu AI - OpenDART & Gemini 기업 재무 분석 대시보드</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome 아이콘 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --ink: #14243a;
-            --muted: #64748b;
-            --paper: #f5f7fb;
-            --white: #fff;
-            --line: #e3e9f2;
-            --navy: #10243e;
-            --lime: #c9f36a;
-            --blue: #3978f6;
-            --radius: 20px;
-        }
-        * { box-sizing: border-box; }
-        body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Inter', 'Noto Sans KR', sans-serif; line-height: 1.65; letter-spacing: -0.025em; padding-bottom: 50px; }
-        .topbar { height: 76px; padding: 0 max(5vw, 24px); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); }
-        .logo { font-weight: 900; letter-spacing: -.07em; font-size: 1.35rem; color: var(--navy); text-decoration: none; }
-        .logo span { color: var(--blue); }
-        .top-actions { display: flex; gap: 10px; align-items: center; }
-        .container { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
-        .card { background: var(--white); padding: 35px; border-radius: var(--radius); box-shadow: 0 15px 40px rgba(16,36,62,0.06); border: 1px solid var(--line); margin-bottom: 24px; }
-        h1, h2, h3 { color: var(--navy); font-weight: 900; letter-spacing: -0.04em; }
-        button { background-color: var(--blue); color: white; border: none; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.2s; box-shadow: 0 4px 14px rgba(57,120,246,0.3); }
-        button:hover { transform: translateY(-2px); background-color: #2b63d9; }
-        button.danger { background-color: #e74c3c; box-shadow: 0 4px 14px rgba(231,76,60,0.3); }
-        button.secondary { background-color: var(--navy); color: #fff; box-shadow: 0 4px 14px rgba(16,36,62,0.2); }
-        input, select { padding: 14px 16px; margin: 8px 0; width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; font-size: 0.95rem; background: #fafbfc; }
-        .hidden { display: none !important; }
-        .settings-btn { background-color: var(--navy); color: #fff; padding: 9px 16px; border-radius: 99px; font-size: 0.78rem; font-weight: 800; border: none; cursor: pointer; }
-        .user-badge { font-size: 0.78rem; font-weight: 800; color: #1b4d3e; background: #eaf8ef; padding: 8px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; }
-        .user-badge i { width: 7px; height: 7px; border-radius: 50%; background: #29b36b; display: inline-block; }
-        .progress-wrapper { margin-top: 20px; background: #fff; padding: 20px; border-radius: 14px; border: 1px solid var(--line); }
-        .progress-info { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
-        .progress-bar-container { width: 100%; background-color: #eef2f7; border-radius: 8px; height: 10px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #4e8cff, var(--blue)); border-radius: 8px; transition: width 0.4s ease-in-out; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(16,36,62,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: var(--radius); position: relative; max-height: 85vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; }
-        .shortcut-link { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--blue); text-decoration: underline; margin-bottom: 10px; }
-        .key-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #fafbfc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 700; }
-
-        .search-container { position: relative; flex-grow: 1; }
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 50; max-height: 220px; overflow-y: auto; margin-top: 5px; }
-        .autocomplete-item { padding: 12px 16px; font-size: 0.9rem; font-weight: 700; color: var(--navy); cursor: pointer; border-bottom: 1px solid var(--paper); transition: background 0.15s; }
-        .autocomplete-item:hover { background: #f0f4fb; color: var(--blue); }
-        .autocomplete-item span { font-size: 0.75rem; color: var(--muted); margin-left: 8px; font-weight: 500; }
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .dropdown-scroll::-webkit-scrollbar { width: 6px; }
+        .dropdown-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
-<body>
+<body class="min-h-screen pb-12">
 
-    <header class="topbar">
-        <a class="logo" href="https://elwlrma486-design.github.io/portfolio/" target="_blank">HYUNMU<span>.</span> CORP ANALYSIS</a>
-        <div class="top-actions" id="top-nav-actions"></div>
+    <!-- 헤더 -->
+    <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-chart-line text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        Hyunmu AI Financial Analysis
+                    </h1>
+                    <p class="text-xs text-slate-400">OpenDART 재무제표 & Gemini AI 자동 기업 분석 대시보드</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="switchTab('analysis')" id="tab-btn-analysis" class="px-3.5 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold transition">
+                    <i class="fa-solid fa-magnifying-glass"></i> 기업 분석
+                </button>
+                <button onclick="switchTab('history')" id="tab-btn-history" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition">
+                    <i class="fa-solid fa-clock-history"></i> 분석 히스토리
+                </button>
+                <button onclick="openSettingsModal()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-400"></i> API / DB 설정
+                </button>
+            </div>
+        </div>
     </header>
 
-    <div class="container">
-        <div id="auth-section" class="card" style="text-align: center; padding: 60px 20px;">
-            <p style="font-size: 0.75rem; font-weight: 900; letter-spacing: 0.15em; color: var(--blue); margin-bottom: 10px;">SECURE AI WORKFLOW</p>
-            <h1 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 15px;">AI 자동 기업분석 시스템</h1>
-            <p style="color: var(--muted); max-width: 500px; margin: 0 auto 30px auto; font-size: 0.95rem;">
-                구글 계정 인증을 통해 사용자의 분석 이력과 API 키가 안전하게 연동되며, DART 공시 데이터와 연동된 10년 치 재무제표 분석 리포트를 제공합니다.
-            </p>
-            <button onclick="handleGoogleLogin()" style="padding: 16px 32px; font-size: 1rem;">구글 계정으로 시작하기 ↗</button>
+    <main class="max-w-7xl mx-auto px-4 pt-8">
+
+        <!-- Tab 1: 분석 메인 탭 -->
+        <div id="tab-analysis-content" class="space-y-8">
+            <!-- 검색 및 설정 영역 -->
+            <div class="glass-card rounded-2xl p-6 relative z-40">
+                <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-building text-blue-400"></i> 국내 상장사 및 공시 기업 검색
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- 드롭다운 검색창 -->
+                    <div class="md:col-span-2 relative">
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">기업명 또는 종목코드 (국내 상장/비상장사)</label>
+                        <div class="relative">
+                            <input type="text" id="company-search-input" oninput="handleSearchInput(this.value)" placeholder="예: 삼성전자, SK하이닉스, DB하이텍, 005930..." 
+                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                            <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
+                        </div>
+
+                        <!-- 검색 드롭다운 목록 -->
+                        <div id="search-dropdown" class="hidden absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-h-60 overflow-y-auto dropdown-scroll z-50">
+                        </div>
+                    </div>
+
+                    <!-- 사업연도 선택 -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">분석 기준연도</label>
+                        <select id="bsns-year-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                            <option value="2023" selected>2023년 사업보고서</option>
+                            <option value="2022">2022년 사업보고서</option>
+                            <option value="2021">2021년 사업보고서</option>
+                        </select>
+                    </div>
+
+                    <!-- 분석 시작 버튼 -->
+                    <div class="flex items-end">
+                        <button id="analyze-btn" onclick="startFinancialAnalysis()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI 기업 분석 시작
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 선택된 기업 상태 표시 -->
+                <div id="selected-company-info" class="mt-3 text-xs text-blue-400 font-medium hidden">
+                    <i class="fa-solid fa-circle-check"></i> 선택된 기업: <span id="selected-corp-name" class="font-bold text-white"></span> (고유번호: <span id="selected-corp-code"></span>, 종목코드: <span id="selected-stock-code"></span>)
+                </div>
+            </div>
+
+            <!-- 로딩 상태 스피너 -->
+            <div id="loading-spinner" class="hidden glass-card rounded-2xl p-12 text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+                <h3 class="text-lg font-bold text-slate-200" id="loading-status-text">OpenDART 재무제표 수집 중...</h3>
+                <p class="text-xs text-slate-400 mt-2">OpenDART 수치 추출 후 Gemini 2.5 AI 모델이 심층 분석을 수행합니다.</p>
+            </div>
+
+            <!-- 분석 결과 대시보드 -->
+            <div id="dashboard-content" class="hidden space-y-8">
+                <!-- 1. 핵심 재무 지표 요약 카드 (Hyunmu 스타일) -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-blue-500">
+                        <span class="text-xs text-slate-400 block font-medium">매출액</span>
+                        <span id="metric-revenue" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-emerald-500">
+                        <span class="text-xs text-slate-400 block font-medium">영업이익</span>
+                        <span id="metric-op-profit" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-indigo-500">
+                        <span class="text-xs text-slate-400 block font-medium">당기순이익</span>
+                        <span id="metric-net-profit" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-amber-500">
+                        <span class="text-xs text-slate-400 block font-medium">자산총계</span>
+                        <span id="metric-assets" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-rose-500">
+                        <span class="text-xs text-slate-400 block font-medium">부채비율</span>
+                        <span id="metric-debt-ratio" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-purple-500">
+                        <span class="text-xs text-slate-400 block font-medium">ROE</span>
+                        <span id="metric-roe" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
+                    </div>
+                </div>
+
+                <!-- 2. 시각화 차트 & 재무제표 수치 요약 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- 차트 -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-emerald-400"></i> 주요 재무 실적 시각화
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="financialChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 원본 수치 표 -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced text-indigo-400"></i> 주요 재무제표 요약 (단위: 억 원)
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left text-slate-300">
+                                <thead class="bg-slate-800 text-slate-400 uppercase border-b border-slate-700">
+                                    <tr>
+                                        <th class="py-2.5 px-3">항목</th>
+                                        <th class="py-2.5 px-3 text-right">금액</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="financial-table-body" class="divide-y divide-slate-800">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Gemini AI 리포트 -->
+                <div class="glass-card rounded-2xl p-8 border border-blue-500/30">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-blue-600/20 text-blue-400 p-2 rounded-lg">
+                                <i class="fa-solid fa-brain text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">Gemini AI 심층 재무 및 기업 리포트</h3>
+                                <p class="text-xs text-slate-400">OpenDART 실시간 공시 데이터 기반 AI 기업 진단</p>
+                            </div>
+                        </div>
+                        <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3 py-1 rounded-full font-semibold">
+                            Gemini 2.5 Flash
+                        </span>
+                    </div>
+
+                    <div id="ai-report-container" class="prose prose-invert max-w-none text-sm text-slate-300 leading-relaxed space-y-4">
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="dashboard-section" class="card hidden">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+        <!-- Tab 2: 분석 히스토리 탭 -->
+        <div id="tab-history-content" class="hidden space-y-4">
+            <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-history text-indigo-400"></i> 기업 분석 보관함 (Supabase 연동)
+                    </h2>
+                    <button onclick="loadHistoryFromSupabase()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-300">
+                        🔄 새로고침
+                    </button>
+                </div>
+
+                <div id="history-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <p class="text-slate-500 text-xs col-span-full">저장된 분석 결과가 없습니다.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 설정 모달 (OpenDART, Gemini, Supabase) -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card bg-slate-900 w-full max-w-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-sliders text-blue-400"></i> API & Supabase 연동 설정</h3>
+            <p class="text-xs text-slate-400 mb-6">입력하신 정보는 사용자의 브라우저(localStorage)에 안전하게 보관됩니다.</p>
+
+            <div class="space-y-4">
                 <div>
-                    <span class="user-badge"><i></i> <span id="user-email-text"></span> 계정 연동됨</span>
-                    <h2 style="margin: 10px 0 5px 0; font-size: 1.8rem;">DART Open API × AI 10년 재무 분석</h2>
-                    <p style="color: var(--muted); font-size: 0.9rem; margin: 0;">국내 모든 상장 기업명을 자유롭게 입력하여 분석할 수 있습니다.</p>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">OpenDART API Key</label>
+                    <input type="password" id="dart-api-key-input" placeholder="OpenDART 인증키 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <a href="https://opendart.fss.or.kr/" target="_blank" class="text-[10px] text-blue-400 hover:underline mt-1 inline-block">🔗 OpenDART 키 발급받기</a>
                 </div>
+
                 <div>
-                    <button class="settings-btn" onclick="openSettingsModal()">⚙️ API 설정 및 키 관리</button>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Google Gemini API Key</label>
+                    <input type="password" id="gemini-api-key-input" placeholder="Google AI Studio API Key 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-blue-400 hover:underline mt-1 inline-block">🔗 Google AI Studio 키 발급받기</a>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Supabase URL</label>
+                    <input type="text" id="supabase-url-input" placeholder="https://your-project.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500">
+
+                    <label class="block text-xs font-semibold text-slate-300 mb-1 mt-3">Supabase Anon Key</label>
+                    <input type="password" id="supabase-key-input" placeholder="eyJhbGci..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
             </div>
 
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
-
-            <div style="display: flex; gap: 12px; margin-top: 20px; align-items: flex-start;">
-                <div class="search-container">
-                    <input type="text" id="corp-search-input" placeholder="분석할 기업명을 입력하세요 (예: 삼성전자, SK하이닉스 등 직접 입력 가능)" autocomplete="off" oninput="handleSearchInput(this.value)">
-                    <div id="autocomplete-box" class="autocomplete-list hidden"></div>
-                </div>
-                <button class="secondary" onclick="runCorporateAnalysis()" style="white-space: nowrap; padding: 14px 24px; margin-top: 8px;">🔍 분석 시작</button>
-            </div>
-
-            <div id="corp-loading-wrapper" class="progress-wrapper hidden">
-                <div class="progress-info">
-                    <span id="corp-progress-status-text">📊 DART 공시 데이터 조회 및 AI 심층 분석 중...</span>
-                    <span id="corp-progress-percent-text">0%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div id="corp-progress-bar-fill" class="progress-bar"></div>
-                </div>
-            </div>
-
-            <div id="corp-result-container" style="margin-top: 30px;"></div>
+            <button onclick="saveApiKeys()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs transition">
+                설정 저장하기
+            </button>
         </div>
     </div>
 
-    <div id="settings-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <button class="close-modal" onclick="closeSettingsModal()">&times;</button>
-            <h3>🔑 AI API 연동 설정</h3>
-            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">구글 Gemini API 키를 등록하면 즉시 분석이 가능합니다.</p>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">AI 제공자</label>
-                <select id="provider-select" style="margin-top: 5px;">
-                    <option value="gemini">Google Gemini (Google AI Studio)</option>
-                </select>
-                <a class="shortcut-link" href="https://aistudio.google.com/app/apikey" target="_blank">🔗 구글 Gemini API 키 발급받기 (무료) ↗</a>
-
-                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy); display: block; margin-top: 10px;">AI API Key 입력</label>
-                <input type="password" id="api-key-input" placeholder="실제 API 키를 입력하세요">
-
-                <button id="save-btn" onclick="saveApiKey()" style="width: 100%; margin-top: 5px;">API 키 등록하기</button>
-            </div>
-
-            <h4 style="margin: 25px 0 10px 0; font-size: 0.95rem;">등록된 내 API 키 목록</h4>
-            <div id="key-list-container"></div>
-        </div>
-    </div>
-
+    <!-- 스크립트 로직 -->
     <script>
-        const SUPABASE_URL = 'https://anxsobfzqimqhvzubeoy.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_l6radcv0p29neEcapKGmtQ_bDiMBK_A';
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        let currentUser = null;
+        // Supabase 기본 세팅 (기존 프로젝트 수치 기본 연동)
+        const DEFAULT_SUPABASE_URL = 'https://anxsobfzqimqhvzubeoy.supabase.co';
+        const DEFAULT_SUPABASE_KEY = 'sb_publishable_l6radcv0p29neEcapKGmtQ_bDiMBK_A';
 
-        const DART_CORP_DB = [
-            { name: "SK", code: "00181703", stock: "034730" },
-            { name: "SK하이닉스", code: "00164779", stock: "000660" },
-            { name: "SK이노베이션", code: "00630805", stock: "096770" },
-            { name: "SK텔레콤", code: "00158912", stock: "017670" },
-            { name: "삼성전자", code: "00126380", stock: "005930" },
-            { name: "삼성SDI", code: "00126283", stock: "006400" },
-            { name: "LG전자", code: "00147554", stock: "066570" },
-            { name: "LG화학", code: "00356160", stock: "051910" },
-            { name: "DB하이텍", code: "00114785", stock: "000990" },
-            { name: "현대자동차", code: "00164742", stock: "005380" },
-            { name: "기아", code: "00106641", stock: "000270" },
-            { name: "NAVER", code: "00258801", stock: "035420" },
-            { name: "카카오", code: "00253894", stock: "035720" },
-            { name: "셀트리온", code: "00366875", stock: "068270" },
-            { name: "포스코홀딩스", code: "00140737", stock: "005490" }
-        ];
+        let supabaseClient = null;
+        let corpCodeList = [];
+        let selectedCorp = null;
+        let chartInstance = null;
+        let historyData = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
-            supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                if (session) {
-                    currentUser = session.user;
-                    showDashboard();
-                    loadApiKeys();
-                    loadUserSavedReport();
-                } else {
-                    currentUser = null;
-                    showAuth();
-                }
-            });
-            await checkSession();
+            loadSavedKeys();
+            initSupabase();
+            loadCorpCodes();
+            loadHistoryFromSupabase();
         });
 
-        async function checkSession() {
-            try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (session) {
-                    currentUser = session.user;
-                    showDashboard();
-                    loadApiKeys();
-                    loadUserSavedReport();
-                } else {
-                    showAuth();
-                }
-            } catch (err) {
-                showAuth();
+        function loadSavedKeys() {
+            document.getElementById('dart-api-key-input').value = localStorage.getItem('opendart_api_key') || '';
+            document.getElementById('gemini-api-key-input').value = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('supabase-url-input').value = localStorage.getItem('supabase_url') || DEFAULT_SUPABASE_URL;
+            document.getElementById('supabase-key-input').value = localStorage.getItem('supabase_key') || DEFAULT_SUPABASE_KEY;
+        }
+
+        function initSupabase() {
+            const url = localStorage.getItem('supabase_url') || DEFAULT_SUPABASE_URL;
+            const key = localStorage.getItem('supabase_key') || DEFAULT_SUPABASE_KEY;
+            if (url && key) {
+                try {
+                    supabaseClient = supabase.createClient(url, key);
+                } catch(e) { console.error('Supabase 연결 실패:', e); }
             }
         }
 
-        async function handleGoogleLogin() {
-            try {
-                const redirectUri = window.location.origin + window.location.pathname;
-                await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: redirectUri, queryParams: { prompt: 'select_account' } }
-                });
-            } catch (err) {
-                alert("로그인 오류: " + err.message);
+        function openSettingsModal() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+        function saveApiKeys() {
+            localStorage.setItem('opendart_api_key', document.getElementById('dart-api-key-input').value.trim());
+            localStorage.setItem('gemini_api_key', document.getElementById('gemini-api-key-input').value.trim());
+            localStorage.setItem('supabase_url', document.getElementById('supabase-url-input').value.trim());
+            localStorage.setItem('supabase_key', document.getElementById('supabase-key-input').value.trim());
+            
+            initSupabase();
+            alert('설정이 저장되었습니다!');
+            closeSettingsModal();
+        }
+
+        function switchTab(tab) {
+            const analysisContent = document.getElementById('tab-analysis-content');
+            const historyContent = document.getElementById('tab-history-content');
+            const btnAnalysis = document.getElementById('tab-btn-analysis');
+            const btnHistory = document.getElementById('tab-btn-history');
+
+            if (tab === 'analysis') {
+                analysisContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+                btnAnalysis.className = "px-3.5 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold transition";
+                btnHistory.className = "px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition";
+            } else {
+                analysisContent.classList.add('hidden');
+                historyContent.classList.remove('hidden');
+                btnHistory.className = "px-3.5 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold transition";
+                btnAnalysis.className = "px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition";
+                loadHistoryFromSupabase();
             }
         }
 
-        async function handleLogout() {
-            await supabaseClient.auth.signOut({ scope: 'local' });
-            currentUser = null;
-            showAuth();
+        function loadCorpCodes() {
+            corpCodeList = [
+                { corp_code: '00126380', corp_name: '삼성전자', stock_code: '005930' },
+                { corp_code: '00164779', corp_name: 'SK하이닉스', stock_code: '000660' },
+                { corp_code: '00401731', corp_name: 'LG에너지솔루션', stock_code: '373220' },
+                { corp_code: '00126186', corp_name: 'LG전자', stock_code: '066570' },
+                { corp_code: '00266961', corp_name: 'DB하이텍', stock_code: '000990' },
+                { corp_code: '00258801', corp_name: '카카오', stock_code: '035720' },
+                { corp_code: '00164803', corp_name: 'NAVER', stock_code: '035420' },
+                { corp_code: '00164742', corp_name: '현대자동차', stock_code: '005380' }
+            ];
         }
 
-        function showAuth() {
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('top-nav-actions').innerHTML = `<a href="https://elwlrma486-design.github.io/portfolio/" target="_blank" class="settings-btn" style="text-decoration:none;">포트폴리오 메인 ↗</a>`;
-        }
+        function handleSearchInput(query) {
+            const dropdown = document.getElementById('search-dropdown');
+            const cleanQuery = query.trim().toLowerCase();
 
-        function showDashboard() {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('user-email-text').textContent = currentUser.email;
-            document.getElementById('top-nav-actions').innerHTML = `
-                <button class="settings-btn" onclick="openSettingsModal()">⚙️ 설정</button>
-                <button class="danger" onclick="handleLogout()" style="padding: 9px 16px; font-size: 0.78rem;">로그아웃</button>
-            `;
-        }
-
-        function openSettingsModal() {
-            document.getElementById('settings-modal').classList.remove('hidden');
-            loadApiKeys();
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settings-modal').classList.add('hidden');
-        }
-
-        function handleSearchInput(value) {
-            const box = document.getElementById('autocomplete-box');
-            const keyword = value.trim().toUpperCase();
-
-            if (!keyword) {
-                box.classList.add('hidden');
-                box.innerHTML = '';
+            if (!cleanQuery) {
+                dropdown.classList.add('hidden');
                 return;
             }
 
-            const matches = DART_CORP_DB.filter(c => c.name.toUpperCase().includes(keyword));
+            const matches = corpCodeList.filter(c => 
+                c.corp_name.toLowerCase().includes(cleanQuery) || 
+                (c.stock_code && c.stock_code.includes(cleanQuery))
+            ).slice(0, 15);
 
             if (matches.length === 0) {
-                box.classList.add('hidden');
-                box.innerHTML = '';
-                return;
-            }
-
-            box.innerHTML = matches.map(item => `
-                <div class="autocomplete-item" onclick="selectCorp('${item.name}')">
-                    ${item.name} <span>(DART 공시코드: ${item.code})</span>
-                </div>
-            `).join('');
-
-            box.classList.remove('hidden');
-        }
-
-        function selectCorp(name) {
-            document.getElementById('corp-search-input').value = name;
-            document.getElementById('autocomplete-box').classList.add('hidden');
-        }
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container')) {
-                const box = document.getElementById('autocomplete-box');
-                if (box) box.classList.add('hidden');
-            }
-        });
-
-        async function saveApiKey() {
-            const provider = document.getElementById('provider-select').value;
-            const apiKey = document.getElementById('api-key-input').value.trim();
-
-            if (!apiKey) {
-                alert("API 키를 입력해주세요.");
-                return;
-            }
-
-            localStorage.setItem(`ai_key_${currentUser.id}`, JSON.stringify({ provider, apiKey }));
-
-            try {
-                await supabaseClient.from('user_ai_keys').upsert([{ 
-                    user_id: currentUser.id, 
-                    provider, 
-                    api_key: apiKey, 
-                    priority: 1, 
-                    status: 'active' 
-                }]);
-            } catch(e) { console.log(e); }
-
-            alert("✅ API 키가 저장되었습니다!");
-            document.getElementById('api-key-input').value = '';
-            loadApiKeys();
-        }
-
-        async function loadApiKeys() {
-            const container = document.getElementById('key-list-container');
-            if (!container || !currentUser) return;
-            
-            let activeKey = null;
-            try {
-                const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id);
-                if (data && data.length > 0) activeKey = data[0].api_key;
-            } catch(e) {}
-
-            if (!activeKey) {
-                const localData = localStorage.getItem(`ai_key_${currentUser.id}`);
-                if (localData) activeKey = JSON.parse(localData).apiKey;
-            }
-
-            if (!activeKey) {
-                container.innerHTML = '<p style="color:var(--muted); font-size:0.82rem;">등록된 API 키가 없습니다.</p>';
+                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center">검색 결과가 없습니다.</div>`;
             } else {
-                container.innerHTML = `
-                    <div class="key-item">
-                        <span>[GEMINI] 등록 완료</span>
-                        <button class="danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="deleteApiKey()">삭제</button>
+                dropdown.innerHTML = matches.map(c => `
+                    <div onclick="selectCompany('${c.corp_code}', '${c.corp_name}', '${c.stock_code}')" 
+                        class="p-3 hover:bg-slate-800 cursor-pointer border-b border-slate-800/50 flex justify-between items-center transition">
+                        <span class="text-xs font-semibold text-white">${c.corp_name}</span>
+                        <span class="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${c.stock_code ? c.stock_code : '비상장'}</span>
                     </div>
-                `;
+                `).join('');
             }
+
+            dropdown.classList.remove('hidden');
         }
 
-        async function deleteApiKey() {
-            if (!confirm("삭제하시겠습니까?")) return;
-            localStorage.removeItem(`ai_key_${currentUser.id}`);
-            try { await supabaseClient.from('user_ai_keys').delete().eq('user_id', currentUser.id); } catch(e){}
-            loadApiKeys();
+        function selectCompany(corpCode, corpName, stockCode) {
+            selectedCorp = { corpCode, corpName, stockCode };
+            document.getElementById('company-search-input').value = corpName;
+            document.getElementById('search-dropdown').classList.add('hidden');
+            
+            document.getElementById('selected-corp-name').textContent = corpName;
+            document.getElementById('selected-corp-code').textContent = corpCode;
+            document.getElementById('selected-stock-code').textContent = stockCode || 'N/A';
+            document.getElementById('selected-company-info').classList.remove('hidden');
         }
 
-        /* 타임아웃 및 타겟 모델 자동 순회(Fallback) 통신 엔진 */
-        async function callGeminiDirectly(apiKey, prompt) {
-            const candidateList = [
-                { version: 'v1beta', model: 'gemini-3.8-flash' },
-                { version: 'v1beta', model: 'gemini-1.5-flash' },
-                { version: 'v1', model: 'gemini-1.5-flash' },
-                { version: 'v1beta', model: 'gemini-1.5-pro' }
-            ];
+        async function startFinancialAnalysis() {
+            const dartKey = localStorage.getItem('opendart_api_key');
+            const geminiKey = localStorage.getItem('gemini_api_key');
 
-            let lastErrorMsg = "";
-
-            for (let target of candidateList) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12초 타임아웃
-
-                    const response = await fetch(`https://generativelanguage.googleapis.com/${target.version}/models/${target.model}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-                    const data = await response.json();
-
-                    if (response.ok && data.candidates && data.candidates[0] && data.candidates[0].content.parts[0].text) {
-                        return data.candidates[0].content.parts[0].text;
-                    } else if (data.error) {
-                        lastErrorMsg = `[${target.model}] ${data.error.message}`;
-                    }
-                } catch (e) {
-                    lastErrorMsg = e.name === 'AbortError' ? `[${target.model}] 응답 시간 초과` : e.message;
-                    continue;
-                }
-            }
-
-            throw new Error(lastErrorMsg || "Gemini AI 모델 연결 실패. API 키 권한 또는 인터넷 연결 상태를 확인해주세요.");
-        }
-
-        async function runCorporateAnalysis() {
-            const corpName = document.getElementById('corp-search-input').value.trim();
-            if (!corpName) {
-                alert("분석할 기업명을 입력해주세요.");
-                return;
-            }
-
-            let apiKey = null;
-            const localData = localStorage.getItem(`ai_key_${currentUser.id}`);
-            if (localData) apiKey = JSON.parse(localData).apiKey;
-
-            if (!apiKey) {
-                try {
-                    const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id);
-                    if (data && data.length > 0) apiKey = data[0].api_key;
-                } catch(e){}
-            }
-
-            if (!apiKey) {
-                alert("등록된 AI API 키가 없습니다. 우측 상단의 [⚙️ 설정]에서 키를 먼저 입력해주세요.");
+            if (!dartKey || !geminiKey) {
+                alert('OpenDART 키와 Gemini API 키를 [API / DB 설정]에서 입력해주세요!');
                 openSettingsModal();
                 return;
             }
 
-            const wrapper = document.getElementById('corp-loading-wrapper');
-            const fill = document.getElementById('corp-progress-bar-fill');
-            const percentText = document.getElementById('corp-progress-percent-text');
-            const resultContainer = document.getElementById('corp-result-container');
+            if (!selectedCorp) {
+                alert('분석할 기업을 먼저 선택해주세요.');
+                return;
+            }
 
-            wrapper.classList.remove('hidden');
-            resultContainer.innerHTML = '';
-            fill.style.width = '30%';
-            percentText.textContent = '30% (DART 공시 데이터 조회 준비 중...)';
+            const year = document.getElementById('bsns-year-select').value;
+            const spinner = document.getElementById('loading-spinner');
+            const dashboard = document.getElementById('dashboard-content');
+            const statusText = document.getElementById('loading-status-text');
+
+            spinner.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+            statusText.textContent = `[${selectedCorp.corpName}] DART 공시 재무제표 수집 중...`;
 
             try {
-                const foundItem = DART_CORP_DB.find(c => c.name === corpName);
-                let dartInfo = foundItem || { code: "전체상장사공시연동", stock: "실시간조회" };
+                // OpenDART API 연동
+                const dartUrl = `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${dartKey}&corp_code=${selectedCorp.corpCode}&bsns_year=${year}&reprt_code=11011`;
+                const dartRes = await fetch(dartUrl);
+                const dartData = await dartRes.json();
 
-                fill.style.width = '65%';
-                percentText.textContent = '65% (DART 전자공시 기반 최근 10년 치 재무제표 분석 중...)';
+                if (dartData.status !== '000' || !dartData.list) {
+                    throw new Error(dartData.message || '재무제표 데이터를 수집할 수 없습니다.');
+                }
 
-                const prompt = `
-당신은 대한민국 최고 수석 재무 분석가입니다.
-대상 기업: "${corpName}" (대한민국 DART 상장/등록 기업)
-대한민국 DART 전자공시시스템에 공시된 최근 10년간의 재무제표(매출액, 영업이익, 당기순이익)와 공시 데이터를 기반으로 다음 내용을 철저히 분석하여 작성하세요.
+                const financialSummary = processDartFinancialData(dartData.list);
+                renderMetricsAndTable(financialSummary);
+                renderChart(financialSummary);
 
-1. **기업 개요 및 10년 재무 트렌드 요약**
-2. **시기별 실적 상승/하락 구간 및 구체적인 원인 분석** (어떤 연도에 실적이 왜 변동했는지 상세 기술)
-3. **핵심 뉴스 헤드라인 및 이슈 카드 (4개 이상)** (각 시기별 핵심 뉴스 제목과 구글 검색 링크 포함)
-4. **종합 평가 및 최종 투자 포인트**
+                // Gemini AI 분석
+                statusText.textContent = `Gemini AI가 [${selectedCorp.corpName}] 재무 리포트를 생성하는 중...`;
+                const aiReport = await callGeminiAnalysis(geminiKey, selectedCorp.corpName, year, financialSummary);
 
-출력은 순수 HTML 태그로만 작성해 주세요. (마크다운 코드블록 금지)
-                `;
+                document.getElementById('ai-report-container').innerHTML = aiReport;
 
-                const reportHtml = await callGeminiDirectly(apiKey, prompt);
+                spinner.classList.add('hidden');
+                dashboard.classList.remove('hidden');
 
-                fill.style.width = '100%';
-                percentText.textContent = '100% (분석 완료!)';
-                setTimeout(() => wrapper.classList.add('hidden'), 400);
-
-                resultContainer.innerHTML = `
-                    <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
-                        <h2 style="margin-top: 0; color: var(--navy);">🏢 ${corpName} 10년 재무 및 AI 분석 리포트</h2>
-                        <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">DART 공시 연동 완료 | 분석 일시: ${new Date().toLocaleString()}</p>
-                        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
-                        <div style="font-size: 0.95rem; line-height: 1.8;">${reportHtml}</div>
-                    </div>
-                `;
-
-                const reportPayload = { user_id: currentUser.id, corp_name: corpName, report_html: reportHtml, updated_at: new Date().toISOString() };
-                localStorage.setItem(`latest_report_${currentUser.id}`, JSON.stringify(reportPayload));
-                try { await supabaseClient.from('user_corporate_reports').upsert(reportPayload, { onConflict: 'user_id, corp_name' }); } catch(e){}
+                // Supabase 클라우드 DB 저장
+                saveHistoryToSupabase(selectedCorp.corpName, year, financialSummary, aiReport);
 
             } catch (err) {
-                wrapper.classList.add('hidden');
-                alert("분석 실패:\n" + err.message);
+                spinner.classList.add('hidden');
+                alert('분석 중 오류 발생: ' + err.message);
             }
         }
 
-        async function loadUserSavedReport() {
-            if (!currentUser) return;
-            const localReport = localStorage.getItem(`latest_report_${currentUser.id}`);
-            if (localReport) {
-                const latest = JSON.parse(localReport);
-                document.getElementById('corp-search-input').value = latest.corp_name;
-                document.getElementById('corp-result-container').innerHTML = `
-                    <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
-                        <h2 style="margin-top: 0; color: var(--navy);">🏢 ${latest.corp_name} 10년 재무 및 AI 분석 리포트 (최근 기록)</h2>
-                        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
-                        <div style="font-size: 0.95rem; line-height: 1.8;">${latest.report_html}</div>
+        function processDartFinancialData(list) {
+            let data = { revenue: 0, opProfit: 0, netProfit: 0, assets: 0, liabilities: 0, equity: 0 };
+            list.forEach(item => {
+                const amount = parseInt(item.thstrm_amount.replace(/,/g, '')) || 0;
+                const nm = item.account_nm;
+                if (nm.includes('매출액') || nm.includes('수익(매출액)')) data.revenue = amount;
+                else if (nm.includes('영업이익')) data.opProfit = amount;
+                else if (nm.includes('당기순이익')) data.netProfit = amount;
+                else if (nm.includes('자산총계')) data.assets = amount;
+                else if (nm.includes('부채총계')) data.liabilities = amount;
+                else if (nm.includes('자본총계')) data.equity = amount;
+            });
+            return data;
+        }
+
+        function renderMetricsAndTable(f) {
+            const formatEok = (num) => (num / 100000000).toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + ' 억 원';
+            document.getElementById('metric-revenue').textContent = formatEok(f.revenue);
+            document.getElementById('metric-op-profit').textContent = formatEok(f.opProfit);
+            document.getElementById('metric-net-profit').textContent = formatEok(f.netProfit);
+            document.getElementById('metric-assets').textContent = formatEok(f.assets);
+
+            document.getElementById('metric-debt-ratio').textContent = f.equity ? ((f.liabilities / f.equity) * 100).toFixed(1) + '%' : 'N/A';
+            document.getElementById('metric-roe').textContent = f.equity ? ((f.netProfit / f.equity) * 100).toFixed(1) + '%' : 'N/A';
+
+            const tbody = document.getElementById('financial-table-body');
+            tbody.innerHTML = `
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">매출액</td><td class="py-2 px-3 text-right font-bold text-blue-400">${formatEok(f.revenue)}</td></tr>
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">영업이익</td><td class="py-2 px-3 text-right font-bold text-emerald-400">${formatEok(f.opProfit)}</td></tr>
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">당기순이익</td><td class="py-2 px-3 text-right font-bold text-indigo-400">${formatEok(f.netProfit)}</td></tr>
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">자산총계</td><td class="py-2 px-3 text-right">${formatEok(f.assets)}</td></tr>
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">부채총계</td><td class="py-2 px-3 text-right">${formatEok(f.liabilities)}</td></tr>
+                <tr><td class="py-2 px-3 font-semibold text-slate-200">자본총계</td><td class="py-2 px-3 text-right">${formatEok(f.equity)}</td></tr>
+            `;
+        }
+
+        function renderChart(f) {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['매출액', '영업이익', '당기순이익'],
+                    datasets: [{
+                        label: '금액 (억 원)',
+                        data: [f.revenue / 100000000, f.opProfit / 100000000, f.netProfit / 100000000],
+                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(99, 102, 241, 0.7)'],
+                        borderColor: ['#3b82f6', '#10b981', '#6366f1'],
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                        x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function callGeminiAnalysis(apiKey, corpName, year, f) {
+            const prompt = `
+당신은 대한민국 최고 신용평가사 및 기업 리서치 애널리스트입니다.
+[${corpName}]의 ${year}년도 공시 재무제표 수치를 바탕으로 종합 기업 분석 리포트를 작성하세요.
+
+[재무제표 데이터]
+- 매출액: ${(f.revenue / 100000000).toFixed(0)}억 원
+- 영업이익: ${(f.opProfit / 100000000).toFixed(0)}억 원
+- 당기순이익: ${(f.netProfit / 100000000).toFixed(0)}억 원
+- 자산총계: ${(f.assets / 100000000).toFixed(0)}억 원
+- 부채총계: ${(f.liabilities / 100000000).toFixed(0)}억 원
+- 자본총계: ${(f.equity / 100000000).toFixed(0)}억 원
+- 부채비율: ${f.equity ? ((f.liabilities / f.equity) * 100).toFixed(1) : 0}%
+- ROE: ${f.equity ? ((f.netProfit / f.equity) * 100).toFixed(1) : 0}%
+
+다음 구조를 포함한 HTML 태그로 출력하세요:
+1. <b>📊 종합 재무 건전성 및 펀더멘털 진단</b>
+2. <b>📈 수익성 및 성장 가능성 (영업이익률 및 ROE 기반)</b>
+3. <b>⚠️ 핵심 부채 구조 및 잠재적 리스크 분석</b>
+4. <b>🎯 최종 AI 종합 평점 및 투자 체크포인트</b>
+`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.candidates) throw new Error(data.error?.message || 'Gemini 호출 실패');
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        async function saveHistoryToSupabase(corpName, year, summary, report) {
+            if (!supabaseClient) return;
+            try {
+                const payload = {
+                    corp_name: corpName,
+                    bsns_year: year,
+                    revenue: summary.revenue,
+                    op_profit: summary.opProfit,
+                    report_html: report,
+                    created_at: new Date().toISOString()
+                };
+                await supabaseClient.from('financial_analysis_history').insert([payload]);
+            } catch(e) { console.error('Supabase 저장 예외:', e); }
+        }
+
+        async function loadHistoryFromSupabase() {
+            const container = document.getElementById('history-list-container');
+            if (!supabaseClient) {
+                container.innerHTML = '<p class="text-slate-500 text-xs col-span-full">Supabase 설정이 필요합니다.</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('financial_analysis_history')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error || !data || data.length === 0) {
+                    container.innerHTML = '<p class="text-slate-500 text-xs col-span-full">저장된 분석 결과가 없습니다.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.map(item => `
+                    <div class="glass-card p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-white">${item.corp_name}</span>
+                            <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">${item.bsns_year}년</span>
+                        </div>
+                        <p class="text-xs text-slate-400">매출: ${(item.revenue / 100000000).toFixed(0)}억 원 | 영업이익: ${(item.op_profit / 100000000).toFixed(0)}억 원</p>
+                        <p class="text-[10px] text-slate-500 mt-2">${new Date(item.created_at).toLocaleString('ko-KR')}</p>
                     </div>
-                `;
+                `).join('');
+            } catch(e) {
+                container.innerHTML = '<p class="text-rose-400 text-xs col-span-full">히스토리를 가져오지 못했습니다.</p>';
             }
         }
     </script>
