@@ -337,29 +337,32 @@
             loadApiKeys();
         }
 
-        /* 최신 지원 모델만 호출하도록 전면 수정된 통신 로직 */
+        /* v1 및 v1beta 엔드포인트를 모두 지원하는 안정적인 AI 통신 로직 */
         async function callGeminiDirectly(apiKey, prompt) {
-            const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+            const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+            const versions = ['v1', 'v1beta'];
             let lastErrorMsg = "";
 
-            for (let model of models) {
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    
-                    const data = await response.json();
+            for (let version of versions) {
+                for (let model of models) {
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                        });
+                        
+                        const data = await response.json();
 
-                    if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
-                        return data.candidates[0].content.parts[0].text;
-                    } else if (data.error) {
-                        lastErrorMsg = `[${model}] ${data.error.message}`;
+                        if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
+                            return data.candidates[0].content.parts[0].text;
+                        } else if (data.error) {
+                            lastErrorMsg = `[${version}/${model}] ${data.error.message}`;
+                        }
+                    } catch(e) { 
+                        lastErrorMsg = e.message;
+                        continue; 
                     }
-                } catch(e) { 
-                    lastErrorMsg = e.message;
-                    continue; 
                 }
             }
             throw new Error(lastErrorMsg || "Gemini 통신 응답에 실패했습니다.");
