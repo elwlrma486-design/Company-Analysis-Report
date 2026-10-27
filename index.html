@@ -48,7 +48,6 @@
         .shortcut-link { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--blue); text-decoration: underline; margin-bottom: 10px; }
         .key-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #fafbfc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 700; }
 
-        /* 자동완성 검색창 UI 스타일 */
         .search-container { position: relative; flex-grow: 1; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 50; max-height: 220px; overflow-y: auto; margin-top: 5px; }
         .autocomplete-item { padding: 12px 16px; font-size: 0.9rem; font-weight: 700; color: var(--navy); cursor: pointer; border-bottom: 1px solid var(--paper); transition: background 0.15s; }
@@ -87,7 +86,6 @@
 
             <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
 
-            <!-- 검색 및 자동완성 드롭다운 -->
             <div style="display: flex; gap: 12px; margin-top: 20px; align-items: flex-start;">
                 <div class="search-container">
                     <input type="text" id="corp-search-input" placeholder="분석할 기업명을 입력하세요 (예: SK, 삼성, LG, DB)" autocomplete="off" oninput="handleSearchInput(this.value)">
@@ -142,7 +140,6 @@
         
         let currentUser = null;
 
-        // DART 전자공시 공식 등록 주요 기업 데이터베이스
         const DART_CORP_DB = [
             { name: "SK", code: "00181703", stock: "034730" },
             { name: "SK하이닉스", code: "00164779", stock: "000660" },
@@ -223,7 +220,6 @@
         }
 
         function showDashboard() {
-            document.getElementById('auth-section').classList.hidden = false;
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
             document.getElementById('user-email-text').textContent = currentUser.email;
@@ -242,7 +238,6 @@
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
-        /* 실시간 DART 기업명 검색 자동완성 핸들러 */
         function handleSearchInput(value) {
             const box = document.getElementById('autocomplete-box');
             const keyword = value.trim().toUpperCase();
@@ -275,7 +270,6 @@
             document.getElementById('autocomplete-box').classList.add('hidden');
         }
 
-        // 문서 외부 클릭 시 자동완성 닫기
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-container')) {
                 const box = document.getElementById('autocomplete-box');
@@ -343,9 +337,9 @@
             loadApiKeys();
         }
 
-        /* 디버깅 메시지가 포함된 Gemini 통신 함수 */
+        /* 최신 지원 모델만 호출하도록 전면 수정된 통신 로직 */
         async function callGeminiDirectly(apiKey, prompt) {
-            const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+            const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
             let lastErrorMsg = "";
 
             for (let model of models) {
@@ -446,7 +440,7 @@
 
             } catch (err) {
                 wrapper.classList.add('hidden');
-                alert("구체적 분석 실패 원인:\n" + err.message);
+                alert("분석 실패:\n" + err.message);
             }
         }
 
