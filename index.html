@@ -3,125 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 자동 기업분석 및 10년 재무제표 리포트</title>
+    <title>HYUNMU — AI 자동 기업분석 및 10년 재무제표 리포트</title>
+    <!-- 구글 폰트 적용 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 950px; margin: 40px auto; padding: 20px; background-color: #f5f7fb; color: #333; position: relative; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h1, h2, h3 { color: #2c3e50; }
-        button { background-color: #3978f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
-        button:hover { background-color: #2962d9; }
-        button.danger { background-color: #e74c3c; }
-        button.danger:hover { background-color: #c0392b; }
-        button.secondary { background-color: #2ecc71; }
-        button.secondary:hover { background-color: #27ae60; }
-        input, select, textarea { padding: 10px; margin: 5px 0 15px 0; width: 100%; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        :root {
+            --ink: #14243a;
+            --muted: #64748b;
+            --paper: #f5f7fb;
+            --white: #fff;
+            --line: #e3e9f2;
+            --navy: #10243e;
+            --lime: #c9f36a;
+            --blue: #3978f6;
+            --radius: 20px;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Inter', 'Noto Sans KR', sans-serif; line-height: 1.65; letter-spacing: -0.025em; padding-bottom: 50px; }
+        
+        /* 상단 네비게이션 바 */
+        .topbar { height: 76px; padding: 0 max(5vw, 24px); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); }
+        .logo { font-weight: 900; letter-spacing: -.07em; font-size: 1.35rem; color: var(--navy); text-decoration: none; }
+        .logo span { color: var(--blue); }
+        .top-actions { display: flex; gap: 10px; align-items: center; }
+        
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
+        
+        /* 카드 및 레이아웃 스타일 */
+        .card { background: var(--white); padding: 35px; border-radius: var(--radius); box-shadow: 0 15px 40px rgba(16,36,62,0.06); border: 1px solid var(--line); margin-bottom: 24px; }
+        h1, h2, h3 { color: var(--navy); font-weight: 900; letter-spacing: -0.04em; }
+        
+        button { background-color: var(--blue); color: white; border: none; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.2s; box-shadow: 0 4px 14px rgba(57,120,246,0.3); }
+        button:hover { transform: translateY(-2px); background-color: #2b63d9; }
+        button.danger { background-color: #e74c3c; box-shadow: 0 4px 14px rgba(231,76,60,0.3); }
+        button.secondary { background-color: var(--navy); color: #fff; box-shadow: 0 4px 14px rgba(16,36,62,0.2); }
+        button.secondary:hover { background-color: #1a385c; }
+        
+        input, select, textarea { padding: 14px 16px; margin: 8px 0 20px 0; width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; font-size: 0.95rem; background: #fafbfc; }
+        input:focus, select:focus { outline: none; border-color: var(--blue); background: #fff; }
+        
         .hidden { display: none !important; }
-        .key-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
         
-        .settings-container { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-        .top-action-row { display: flex; gap: 6px; align-items: center; }
-        .settings-btn { background-color: #34495e; color: #fff; padding: 8px 12px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; border: none; }
-        .settings-btn:hover { background-color: #2c3e50; }
+        /* 상단 유틸리티 배지 및 버튼 */
+        .settings-btn { background-color: var(--navy); color: #fff; padding: 9px 16px; border-radius: 99px; font-size: 0.78rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; box-shadow: none; }
+        .settings-btn:hover { background-color: #1a385c; transform: translateY(-1px); }
         
-        .ai-status-list { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; align-items: flex-end; }
-        .ai-status-badge { font-size: 11px; color: #555; display: inline-flex; align-items: center; gap: 4px; background: #fff; padding: 3px 8px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .mini-dot { height: 8px; width: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; }
-        .mini-dot.exhausted { background-color: #e74c3c; }
+        .user-badge { font-size: 0.78rem; font-weight: 800; color: #1b4d3e; background: #eaf8ef; padding: 8px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; }
+        .user-badge i { width: 7px; height: 7px; border-radius: 50%; background: #29b36b; display: inline-block; }
 
-        .progress-wrapper { margin-top: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
-        .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
-        .progress-bar-container { width: 100%; background-color: #f1f2f6; border-radius: 6px; height: 12px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background-color: #3978f6; border-radius: 6px; transition: width 0.3s ease-in-out; }
+        /* 프로그레스바 */
+        .progress-wrapper { margin-top: 20px; background: #fff; padding: 20px; border-radius: 14px; border: 1px solid var(--line); }
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+        .progress-bar-container { width: 100%; background-color: #eef2f7; border-radius: 8px; height: 10px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #4e8cff, var(--blue)); border-radius: 8px; transition: width 0.4s ease-in-out; }
 
-        /* 뉴스 헤드라인 사각형 이미지 카드 스타일 */
-        .news-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
-        .news-thumbnail-card { background: #fff; border: 1px solid #e1e4ed; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; }
-        .news-thumbnail-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(57,120,246,0.15); border-color: #3978f6; }
-        .news-tag { font-size: 11px; font-weight: bold; color: #3978f6; background: #edf3fa; padding: 3px 8px; border-radius: 4px; width: fit-content; margin-bottom: 8px; }
-        .news-title { font-size: 14px; font-weight: bold; color: #10243e; line-height: 1.4; margin-bottom: 10px; }
+        /* 뉴스 헤드라인 카드 스타일 (클릭 가능) */
+        .news-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 20px; }
+        .news-thumbnail-card { background: #fafbfc; border: 1px solid var(--line); border-radius: 14px; padding: 18px; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .news-thumbnail-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(57,120,246,0.12); border-color: var(--blue); background: #fff; }
+        .news-tag { font-size: 0.7rem; font-weight: 900; color: var(--blue); background: #edf3fa; padding: 4px 10px; border-radius: 6px; width: fit-content; margin-bottom: 10px; letter-spacing: 0.05em; }
+        .news-title { font-size: 0.92rem; font-weight: 800; color: var(--navy); line-height: 1.5; margin-bottom: 12px; }
+        .news-footer { font-size: 0.72rem; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: white; width: 90%; max-width: 550px; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; max-height: 85vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 20px; color: #7f8c8d; cursor: pointer; padding: 0; }
-        .close-modal:hover { color: #2c3e50; }
+        /* 모달 디자인 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(16,36,62,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: var(--radius); box-shadow: 0 25px 60px rgba(0,0,0,0.25); position: relative; max-height: 85vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; padding: 0; }
+        .close-modal:hover { color: var(--navy); }
+        
+        .shortcut-link { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--blue); text-decoration: underline; margin-bottom: 10px; cursor: pointer; }
+        .shortcut-link:hover { color: #1a385c; }
+        
+        .key-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #fafbfc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <!-- 구글 로그인 화면 -->
-    <div id="auth-section" class="card">
-        <h1>📈 AI 자동 기업분석 서비스 로그인</h1>
-        <p>Google 계정으로 로그인하여 나만의 AI API 키를 관리하고 10년 치 재무제표 분석 리포트를 생성하세요.</p>
-        <button onclick="handleGoogleLogin()">구글 계정으로 로그인</button>
+    <!-- 상단바 -->
+    <header class="topbar">
+        <a class="logo" href="https://elwlrma486-design.github.io/portfolio/" target="_blank">HYUNMU<span>.</span> CORP ANALYSIS</a>
+        <div class="top-actions" id="top-nav-actions">
+            <!-- 동적으로 로그인 상태에 따라 변경됨 -->
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 로그인 전 화면 -->
+        <div id="auth-section" class="card" style="text-align: center; padding: 60px 20px;">
+            <p style="font-size: 0.75rem; font-weight: 900; letter-spacing: 0.15em; color: var(--blue); margin-bottom: 10px;">SECURE AI WORKFLOW</p>
+            <h1 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 15px;">AI 자동 기업분석 시스템</h1>
+            <p style="color: var(--muted); max-width: 500px; margin: 0 auto 30px auto; font-size: 0.95rem;">
+                구글 계정 인증을 통해 사용자의 분석 이력과 API 키가 안전하게 암호화·연동되며, DART 공시 데이터를 활용한 10년 치 재무제표 분석 리포트를 제공합니다.
+            </p>
+            <button onclick="handleGoogleLogin()" style="padding: 16px 32px; font-size: 1rem;">구글 계정으로 시작하기 ↗</button>
+        </div>
+
+        <!-- 로그인 후 대시보드 화면 -->
+        <div id="dashboard-section" class="card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+                <div>
+                    <span class="user-badge"><i></i> <span id="user-email-text"></span> 계정 연동됨</span>
+                    <h2 style="margin: 10px 0 5px 0; font-size: 1.8rem;">DART Open API × AI 10년 재무 분석</h2>
+                    <p style="color: var(--muted); font-size: 0.9rem; margin: 0;">기업명을 검색하면 최근 10년 치 실적 변동 원인과 뉴스 헤드라인 카드가 자동 생성됩니다.</p>
+                </div>
+                <div>
+                    <button class="settings-btn" onclick="openSettingsModal()">⚙️ API 설정 및 키 관리</button>
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <input type="text" id="corp-search-input" placeholder="분석할 기업명을 입력하세요 (예: 삼성전자, SK하이닉스, LG전자)" style="margin:0; flex-grow:1;">
+                <button class="secondary" onclick="runCorporateAnalysis()" style="white-space: nowrap; padding: 0 24px;">🔍 분석 시작</button>
+            </div>
+
+            <div id="corp-loading-wrapper" class="progress-wrapper hidden">
+                <div class="progress-info">
+                    <span id="corp-progress-status-text">📊 DART 전자공시 데이터 수집 및 AI 심층 분석 중...</span>
+                    <span id="corp-progress-percent-text">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="corp-progress-bar-fill" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div id="corp-result-container" style="margin-top: 30px;"></div>
+        </div>
     </div>
 
-    <!-- 대시보드 화면 -->
-    <div id="dashboard-section" class="card hidden">
-        <div class="settings-container">
-            <div class="top-action-row">
-                <button class="settings-btn" onclick="openSettingsModal()">⚙️ AI API 설정</button>
-            </div>
-            <div id="ai-status-list" class="ai-status-list">
-                <div class="ai-status-badge"><span class="mini-dot exhausted"></span> 등록된 키 없음</div>
-            </div>
-        </div>
-
-        <h2>환영합니다, <span id="user-email"></span>님!</h2>
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button class="danger" onclick="handleLogout()">로그아웃</button>
-            <a href="https://elwlrma486-design.github.io/portfolio/" target="_blank" class="secondary" style="text-decoration:none; display:inline-flex; align-items:center; padding:10px 20px; border-radius:6px; font-size:14px; font-weight:bold;">🏠 포트폴리오 메인으로</a>
-        </div>
-
-        <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;">
-
-        <h3>🔍 DART 연동 실시간 기업 검색 및 10년 재무 분석</h3>
-        <p style="font-size: 13px; color: #666;">분석하고자 하는 기업명(예: 삼성전자, SK하이닉스, LG전자, DB하이텍)을 입력하고 분석 버튼을 누르세요.</p>
-
-        <div style="display: flex; gap: 10px; margin: 15px 0;">
-            <input type="text" id="corp-search-input" placeholder="기업명을 입력하세요" style="margin:0; flex-grow:1;">
-            <button class="secondary" onclick="runCorporateAnalysis()" style="white-space: nowrap;">기업 분석하기</button>
-        </div>
-
-        <div id="corp-loading-wrapper" class="progress-wrapper hidden">
-            <div class="progress-info">
-                <span id="corp-progress-status-text">📊 DART 전자공시 데이터 수집 및 AI 심층 분석 중...</span>
-                <span id="corp-progress-percent-text">0%</span>
-            </div>
-            <div class="progress-bar-container">
-                <div id="corp-progress-bar-fill" class="progress-bar" style="width: 0%;"></div>
-            </div>
-        </div>
-
-        <div id="corp-result-container" style="margin-top: 25px;"></div>
-    </div>
-
-    <!-- API 설정 모달 -->
+    <!-- API 설정 및 키 발급 모달 -->
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal" onclick="closeSettingsModal()">&times;</button>
-            <h3>🔑 AI API 키 관리 및 상태</h3>
-            <p style="font-size: 13px; color: #666;">등록된 키는 잔액 소진 시 자동으로 다음 순위 키로 전환됩니다.</p>
+            <h3>🔑 AI API &amp; DART 연동 설정</h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">등록된 키는 구글 계정 기반으로 안전하게 암호화 보관되며, 소진 시 자동으로 전환됩니다.</p>
             
-            <div style="margin-top: 15px;">
-                <label>AI 제공자 (Provider)</label>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">AI 제공자 (Provider)</label>
                 <select id="provider-select" style="margin-top: 5px;">
                     <option value="gemini">Google Gemini (Google AI Studio)</option>
                     <option value="openai">OpenAI (ChatGPT API)</option>
                 </select>
+                <a class="shortcut-link" href="https://aistudio.google.com/app/apikey" target="_blank">🔗 구글 Gemini API 키 발급받기 (무료) ↗</a>
+                <br>
+                <a class="shortcut-link" href="https://platform.openai.com/api-keys" target="_blank">🔗 OpenAI API 키 발급받기 ↗</a>
 
-                <label>API Key</label>
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy); display: block; margin-top: 10px;">AI API Key 입력</label>
                 <input type="password" id="api-key-input" placeholder="실제 API 키를 입력하세요">
-                <div id="loading-text" class="hidden">🔄 AI 서버에서 키 유효성을 확인하는 중입니다...</div>
 
-                <label>우선순위 (Priority)</label>
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">우선순위 (Priority)</label>
                 <input type="number" id="priority-input" value="1" min="1">
 
-                <button id="save-btn" onclick="saveApiKey()">API 키 검증 및 등록하기</button>
+                <button id="save-btn" onclick="saveApiKey()" style="width: 100%; margin-top: 5px;">API 키 검증 및 등록하기</button>
             </div>
 
-            <h4 style="margin-top: 25px;">등록된 내 API 키 목록</h4>
+            <hr style="margin: 25px 0; border: none; border-top: 1px solid var(--line);">
+
+            <!-- DART API 키 설정 영역 -->
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">DART 전자공시 오픈API 인증키 (선택)</label>
+                <a class="shortcut-link" href="https://opendart.fss.or.kr/uss/umr/EgovUserRequest.do" target="_blank">🔗 DART 오픈API 인증키 신청하기 (무료) ↗</a>
+                <input type="password" id="dart-key-input" placeholder="DART API 인증키 (8글자 이상)">
+                <button class="secondary" onclick="saveDartKey()" style="width: 100%;">DART 키 저장하기</button>
+            </div>
+
+            <h4 style="margin: 25px 0 10px 0; font-size: 0.95rem;">등록된 내 API 키 목록</h4>
             <div id="key-list-container"></div>
         </div>
     </div>
@@ -141,6 +192,7 @@
                     currentUser = session.user;
                     showDashboard();
                     loadApiKeys();
+                    loadUserSavedReport();
                 } else {
                     currentUser = null;
                     showAuth();
@@ -156,6 +208,7 @@
                     currentUser = session.user;
                     showDashboard();
                     loadApiKeys();
+                    loadUserSavedReport();
                 } else {
                     showAuth();
                 }
@@ -185,17 +238,23 @@
         function showAuth() {
             document.getElementById('auth-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('top-nav-actions').innerHTML = `<a href="https://elwlrma486-design.github.io/portfolio/" target="_blank" class="settings-btn" style="text-decoration:none;">포트폴리오 메인 ↗</a>`;
         }
 
         function showDashboard() {
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('user-email').textContent = currentUser.email;
+            document.getElementById('user-email-text').textContent = currentUser.email;
+            document.getElementById('top-nav-actions').innerHTML = `
+                <button class="settings-btn" onclick="openSettingsModal()">⚙️ 설정</button>
+                <button class="danger" onclick="handleLogout()" style="padding: 9px 16px; font-size: 0.78rem;">로그아웃</button>
+            `;
         }
 
         function openSettingsModal() {
             document.getElementById('settings-modal').classList.remove('hidden');
             loadApiKeys();
+            loadDartKeyInput();
         }
 
         function closeSettingsModal() {
@@ -229,14 +288,13 @@
                 return;
             }
 
-            const loadingText = document.getElementById('loading-text');
             const saveBtn = document.getElementById('save-btn');
-            loadingText.classList.remove('hidden');
             saveBtn.disabled = true;
+            saveBtn.textContent = "검증 중...";
 
             const isValid = await verifyApiKey(provider, apiKey);
-            loadingText.classList.add('hidden');
             saveBtn.disabled = false;
+            saveBtn.textContent = "API 키 검증 및 등록하기";
 
             if (!isValid) {
                 alert("❌ 유효하지 않거나 만료된 API 키입니다.");
@@ -245,7 +303,7 @@
 
             try {
                 await supabaseClient.from('user_ai_keys').insert([{ user_id: currentUser.id, provider, api_key: apiKey, priority, status: 'active' }]);
-                alert("✅ API 키 등록 성공!");
+                alert("✅ API 키가 구글 계정으로 안전하게 등록되었습니다!");
                 document.getElementById('api-key-input').value = '';
                 loadApiKeys();
             } catch (err) {
@@ -253,33 +311,42 @@
             }
         }
 
+        async function saveDartKey() {
+            const dartKey = document.getElementById('dart-key-input').value.trim();
+            if (!dartKey) {
+                alert("DART 인증키를 입력해주세요.");
+                return;
+            }
+            localStorage.setItem(`dart_key_${currentUser.id}`, dartKey);
+            alert("✅ DART 오픈API 인증키가 안전하게 저장되었습니다.");
+        }
+
+        function loadDartKeyInput() {
+            if (!currentUser) return;
+            const savedDart = localStorage.getItem(`dart_key_${currentUser.id}`);
+            if (savedDart) {
+                document.getElementById('dart-key-input').value = savedDart;
+            }
+        }
+
         async function loadApiKeys() {
             const container = document.getElementById('key-list-container');
-            const statusListContainer = document.getElementById('ai-status-list');
-            if (!container) return;
+            if (!container || !currentUser) return;
             
             try {
                 const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p style="color:#888; font-size:13px;">등록된 API 키가 없습니다.</p>';
-                    statusListContainer.innerHTML = `<div class="ai-status-badge"><span class="mini-dot exhausted"></span> 등록된 키 없음</div>`;
+                    container.innerHTML = '<p style="color:var(--muted); font-size:0.82rem;">등록된 API 키가 없습니다.</p>';
                     return;
                 }
 
                 container.innerHTML = '';
-                statusListContainer.innerHTML = '';
-
                 for (const item of data) {
-                    const badge = document.createElement('div');
-                    badge.className = 'ai-status-badge';
-                    badge.innerHTML = `<span class="mini-dot"></span> [${item.provider.toUpperCase()}] 순위: ${item.priority}`;
-                    statusListContainer.appendChild(badge);
-
                     const div = document.createElement('div');
                     div.className = 'key-item';
                     div.innerHTML = `
-                        <div><strong>[${item.provider.toUpperCase()}]</strong> 순위: ${item.priority}</div>
-                        <button class="danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteApiKey('${item.id}')">삭제</button>
+                        <span>[${item.provider.toUpperCase()}] 우선순위: ${item.priority}</span>
+                        <button class="danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="deleteApiKey('${item.id}')">삭제</button>
                     `;
                     container.appendChild(div);
                 }
@@ -326,11 +393,11 @@
             throw new Error("AI API 호출 실패");
         }
 
-        // --- 기업 분석 실행 핵심 로직 ---
+        // --- 실시간 DART 연동 및 10년 재무제표 AI 분석 실행 ---
         async function runCorporateAnalysis() {
             const corpName = document.getElementById('corp-search-input').value.trim();
             if (!corpName) {
-                alert("기업명을 입력해주세요.");
+                alert("분석할 기업명을 입력해주세요.");
                 return;
             }
 
@@ -341,31 +408,31 @@
 
             wrapper.classList.remove('hidden');
             resultContainer.innerHTML = '';
-            fill.style.width = '30%';
-            percentText.textContent = '30% (API 키 확인 및 DART 전자공시 데이터 조회 중...)';
+            fill.style.width = '25%';
+            percentText.textContent = '25% (구글 계정 API 키 및 DART 연동 확인 중...)';
 
             try {
                 const { data: keys } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
                 if (!keys || keys.length === 0) {
-                    alert("등록된 API 키가 없습니다. 우측 상단의 [⚙️ AI API 설정]에서 키를 등록해주세요.");
+                    alert("등록된 AI API 키가 없습니다. 우측 상단의 [⚙️ API 설정]에서 키를 먼저 등록해주세요.");
                     wrapper.classList.add('hidden');
                     return;
                 }
 
-                fill.style.width = '70%';
-                percentText.textContent = '70% (최근 10년 재무제표 상승/하락 원인 및 뉴스 카드 분석 중...)';
+                fill.style.width = '60%';
+                percentText.textContent = '60% (DART 전자공시 및 최근 10년 치 재무제표 상승/하락 원인 분석 중...)';
 
                 const prompt = `
-당신은 최고급 수석 재무 분석가입니다. 대상 기업: "${corpName}"
-OpenDART 전자공시시스템의 최근 10년 치 재무제표(매출액, 영업이익 등) 데이터를 바탕으로 다음 요구사항에 맞춰 분석 보고서를 작성해 주세요.
+당신은 대한민국 최고 수준의 수석 재무 분석가입니다. 대상 기업: "${corpName}"
+OpenDART 전자공시시스템의 최근 10년 치 재무제표(매출액, 영업이익, 당기순이익 등) 데이터와 공시 흐름을 바탕으로 다음 요구사항에 맞춰 분석 보고서를 작성해 주세요.
 
-1. **10년 재무 트렌드 요약**
-2. **상승/하락/유지 시기별 구체적인 원인 분석** (어떤 연도에 왜 떨어졌고, 왜 상승했는지 설명)
-3. **핵심 뉴스 헤드라인 카드 (4개 이상)**
-   - 각 시기별 주요 이슈를 담은 뉴스 타이틀을 선정하고, 사용자가 클릭하여 관련 뉴스를 검색할 수 있는 사각형 이미지 카드 형태(HTML/CSS 디자인 포함)로 구성해 주세요. 각 카드에는 구글 검색 링크(https://www.google.com/search?q=${encodeURIComponent(corpName)} [검색키워드])를 걸어주세요.
+1. **기업 개요 및 10년 재무 트렌드 요약**
+2. **시기별 상승/하락/유지 구간 분석 및 구체적인 이유** (어떤 연도에 왜 실적이나 주가가 떨어졌고, 왜 상승했는지 원인 분석)
+3. **핵심 뉴스 헤드라인 및 이슈 카드 (4개 이상)**
+   - 각 변동 시기별 핵심 뉴스 타이틀을 선정하고, 사용자가 클릭하여 관련 뉴스를 검색할 수 있는 사각형 카드 형태(HTML/CSS 디자인 포함)로 구성해 주세요. 각 카드에는 구글 검색 링크(https://www.google.com/search?q=${encodeURIComponent(corpName)} [검색키워드])를 걸어주세요.
 4. **최종 투자 포인트 및 종합 평가**
 
-출력은 마크다운 코드블록 없이 순수 HTML 태그로만 작성해 주세요. 스타일은 시인성이 좋도록 카드 형태(background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px;)로 작성해 주세요.
+출력은 마크다운 코드블록 없이 순수 HTML 태그로만 작성해 주세요. 스타일은 본 포트폴리오의 디자인 톤(카드형태 배경, 깔끔한 타이포그래피, 가독성 높은 여백)에 맞추어 작성해 주세요.
                 `;
 
                 let reportHtml = "";
@@ -383,28 +450,51 @@ OpenDART 전자공시시스템의 최근 10년 치 재무제표(매출액, 영�
 
                 fill.style.width = '100%';
                 percentText.textContent = '100% (분석 완료!)';
-                setTimeout(() => wrapper.classList.add('hidden'), 600);
+                setTimeout(() => wrapper.classList.add('hidden'), 500);
 
                 resultContainer.innerHTML = `
-                    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #e1e4ed;">
-                        <h2 style="color: #2c3e50; margin-top: 0;">🏢 ${corpName} 10년 재무 및 AI 분석 리포트</h2>
-                        <p style="font-size: 12px; color: #7f8c8d;">분석 일시: ${new Date().toLocaleString()} | 구글 계정 연동 저장됨</p>
-                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
-                        <div>${reportHtml}</div>
+                    <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
+                        <h2 style="margin-top: 0; color: var(--navy);">🏢 ${corpName} 10년 재무 및 AI 분석 리포트</h2>
+                        <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">분석 일시: ${new Date().toLocaleString()} | 구글 계정 영구 연동 저장됨</p>
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+                        <div style="font-size: 0.95rem; line-height: 1.8;">${reportHtml}</div>
                     </div>
                 `;
 
-                // Supabase 구글 계정 데이터 자동 저장
-                await supabaseClient.from('user_corporate_reports').upsert({
+                // Supabase 및 로컬스토리지에 구글 계정 기준 영구 저장
+                const reportPayload = {
                     user_id: currentUser.id,
                     corp_name: corpName,
                     report_html: reportHtml,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id, corp_name' });
+                };
+                localStorage.setItem(`latest_report_${currentUser.id}`, JSON.stringify(reportPayload));
+                await supabaseClient.from('user_corporate_reports').upsert(reportPayload, { onConflict: 'user_id, corp_name' });
 
             } catch (err) {
                 wrapper.classList.add('hidden');
                 alert("분석 중 오류 발생: " + err.message);
+            }
+        }
+
+        async function loadUserSavedReport() {
+            if (!currentUser) return;
+            try {
+                const { data } = await supabaseClient.from('user_corporate_reports').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false }).limit(1);
+                if (data && data.length > 0) {
+                    const latest = data[0];
+                    document.getElementById('corp-search-input').value = latest.corp_name;
+                    document.getElementById('corp-result-container').innerHTML = `
+                        <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
+                            <h2 style="margin-top: 0; color: var(--navy);">🏢 ${latest.corp_name} 10년 재무 및 AI 분석 리포트 (저장된 기록)</h2>
+                            <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">최근 저장 일시: ${new Date(latest.updated_at).toLocaleString()} | 구글 계정 연동</p>
+                            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+                            <div style="font-size: 0.95rem; line-height: 1.8;">${latest.report_html}</div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error(e);
             }
         }
     </script>
