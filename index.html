@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HYUNMU — AI 자동 기업분석 및 10년 재무제표 리포트</title>
-    <!-- 구글 폰트 적용 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -24,65 +22,41 @@
         }
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Inter', 'Noto Sans KR', sans-serif; line-height: 1.65; letter-spacing: -0.025em; padding-bottom: 50px; }
-        
-        /* 상단 네비게이션 바 */
         .topbar { height: 76px; padding: 0 max(5vw, 24px); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); }
         .logo { font-weight: 900; letter-spacing: -.07em; font-size: 1.35rem; color: var(--navy); text-decoration: none; }
         .logo span { color: var(--blue); }
         .top-actions { display: flex; gap: 10px; align-items: center; }
-        
         .container { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
-        
-        /* 카드 및 레이아웃 스타일 */
         .card { background: var(--white); padding: 35px; border-radius: var(--radius); box-shadow: 0 15px 40px rgba(16,36,62,0.06); border: 1px solid var(--line); margin-bottom: 24px; }
         h1, h2, h3 { color: var(--navy); font-weight: 900; letter-spacing: -0.04em; }
-        
         button { background-color: var(--blue); color: white; border: none; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.2s; box-shadow: 0 4px 14px rgba(57,120,246,0.3); }
         button:hover { transform: translateY(-2px); background-color: #2b63d9; }
         button.danger { background-color: #e74c3c; box-shadow: 0 4px 14px rgba(231,76,60,0.3); }
         button.secondary { background-color: var(--navy); color: #fff; box-shadow: 0 4px 14px rgba(16,36,62,0.2); }
-        button.secondary:hover { background-color: #1a385c; }
-        
-        input, select, textarea { padding: 14px 16px; margin: 8px 0 20px 0; width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; font-size: 0.95rem; background: #fafbfc; }
-        input:focus, select:focus { outline: none; border-color: var(--blue); background: #fff; }
-        
+        input, select { padding: 14px 16px; margin: 8px 0 20px 0; width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; font-size: 0.95rem; background: #fafbfc; }
         .hidden { display: none !important; }
-        
-        /* 상단 유틸리티 배지 및 버튼 */
-        .settings-btn { background-color: var(--navy); color: #fff; padding: 9px 16px; border-radius: 99px; font-size: 0.78rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; box-shadow: none; }
-        .settings-btn:hover { background-color: #1a385c; transform: translateY(-1px); }
-        
+        .settings-btn { background-color: var(--navy); color: #fff; padding: 9px 16px; border-radius: 99px; font-size: 0.78rem; font-weight: 800; border: none; cursor: pointer; }
         .user-badge { font-size: 0.78rem; font-weight: 800; color: #1b4d3e; background: #eaf8ef; padding: 8px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; }
         .user-badge i { width: 7px; height: 7px; border-radius: 50%; background: #29b36b; display: inline-block; }
-
-        /* 프로그레스바 */
         .progress-wrapper { margin-top: 20px; background: #fff; padding: 20px; border-radius: 14px; border: 1px solid var(--line); }
         .progress-info { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
         .progress-bar-container { width: 100%; background-color: #eef2f7; border-radius: 8px; height: 10px; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #4e8cff, var(--blue)); border-radius: 8px; transition: width 0.4s ease-in-out; }
-
-        /* 모달 디자인 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(16,36,62,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: var(--radius); box-shadow: 0 25px 60px rgba(0,0,0,0.25); position: relative; max-height: 85vh; overflow-y: auto; }
-        .close-modal { position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; padding: 0; }
-        .close-modal:hover { color: var(--navy); }
-        
-        .shortcut-link { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--blue); text-decoration: underline; margin-bottom: 10px; cursor: pointer; }
-        .shortcut-link:hover { color: #1a385c; }
-        
+        .modal-card { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: var(--radius); position: relative; max-height: 85vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 24px; color: var(--muted); cursor: pointer; }
+        .shortcut-link { display: inline-block; font-size: 0.75rem; font-weight: 800; color: var(--blue); text-decoration: underline; margin-bottom: 10px; }
         .key-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #fafbfc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <!-- 상단바 -->
     <header class="topbar">
         <a class="logo" href="https://elwlrma486-design.github.io/portfolio/" target="_blank">HYUNMU<span>.</span> CORP ANALYSIS</a>
         <div class="top-actions" id="top-nav-actions"></div>
     </header>
 
     <div class="container">
-        <!-- 로그인 전 화면 -->
         <div id="auth-section" class="card" style="text-align: center; padding: 60px 20px;">
             <p style="font-size: 0.75rem; font-weight: 900; letter-spacing: 0.15em; color: var(--blue); margin-bottom: 10px;">SECURE AI WORKFLOW</p>
             <h1 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 15px;">AI 자동 기업분석 시스템</h1>
@@ -92,7 +66,6 @@
             <button onclick="handleGoogleLogin()" style="padding: 16px 32px; font-size: 1rem;">구글 계정으로 시작하기 ↗</button>
         </div>
 
-        <!-- 로그인 후 대시보드 화면 -->
         <div id="dashboard-section" class="card hidden">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
                 <div>
@@ -114,7 +87,7 @@
 
             <div id="corp-loading-wrapper" class="progress-wrapper hidden">
                 <div class="progress-info">
-                    <span id="corp-progress-status-text">📊 DART 전자공시 데이터 수집 및 AI 심층 분석 중...</span>
+                    <span id="corp-progress-status-text">📊 DART 데이터 및 AI 심층 분석 진행 중...</span>
                     <span id="corp-progress-percent-text">0%</span>
                 </div>
                 <div class="progress-bar-container">
@@ -126,37 +99,30 @@
         </div>
     </div>
 
-    <!-- API 설정 및 키 발급 모달 -->
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal" onclick="closeSettingsModal()">&times;</button>
             <h3>🔑 AI API &amp; DART 연동 설정</h3>
-            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">등록된 키는 구글 계정 기반으로 안전하게 암호화 보관되며, 소진 시 자동으로 전환됩니다.</p>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">등록된 키는 구글 계정 기반으로 보관됩니다.</p>
             
             <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">AI 제공자 (Provider)</label>
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">AI 제공자</label>
                 <select id="provider-select" style="margin-top: 5px;">
                     <option value="gemini">Google Gemini (Google AI Studio)</option>
                     <option value="openai">OpenAI (ChatGPT API)</option>
                 </select>
                 <a class="shortcut-link" href="https://aistudio.google.com/app/apikey" target="_blank">🔗 구글 Gemini API 키 발급받기 (무료) ↗</a>
-                <br>
-                <a class="shortcut-link" href="https://platform.openai.com/api-keys" target="_blank">🔗 OpenAI API 키 발급받기 ↗</a>
 
                 <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy); display: block; margin-top: 10px;">AI API Key 입력</label>
                 <input type="password" id="api-key-input" placeholder="실제 API 키를 입력하세요">
 
-                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">우선순위 (Priority)</label>
-                <input type="number" id="priority-input" value="1" min="1">
-
-                <button id="save-btn" onclick="saveApiKey()" style="width: 100%; margin-top: 5px;">API 키 검증 및 등록하기</button>
+                <button id="save-btn" onclick="saveApiKey()" style="width: 100%; margin-top: 5px;">API 키 등록하기</button>
             </div>
 
             <hr style="margin: 25px 0; border: none; border-top: 1px solid var(--line);">
 
-            <!-- DART API 키 설정 영역 -->
             <div style="margin-bottom: 20px;">
-                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">DART 전자공시 오픈API 인증키 (선택)</label>
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">DART 오픈API 인증키 (선택)</label>
                 <a class="shortcut-link" href="https://opendart.fss.or.kr/uss/umr/EgovUserRequest.do" target="_blank">🔗 DART 오픈API 인증키 신청하기 (무료) ↗</a>
                 <input type="password" id="dart-key-input" placeholder="DART API 인증키 입력">
                 <button class="secondary" onclick="saveDartKey()" style="width: 100%;">DART 키 저장하기</button>
@@ -170,7 +136,6 @@
     <script>
         const SUPABASE_URL = 'https://anxsobfzqimqhvzubeoy.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_l6radcv0p29neEcapKGmtQ_bDiMBK_A';
-        
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
@@ -251,54 +216,31 @@
             document.getElementById('settings-modal').classList.add('hidden');
         }
 
-        async function verifyApiKey(provider, apiKey) {
-            try {
-                if (provider === 'gemini') {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                    return response.ok;
-                } else if (provider === 'openai') {
-                    const response = await fetch('https://api.openai.com/v1/models', {
-                        headers: { 'Authorization': `Bearer ${apiKey}` }
-                    });
-                    return response.ok;
-                }
-                return false;
-            } catch (err) {
-                return false;
-            }
-        }
-
         async function saveApiKey() {
             const provider = document.getElementById('provider-select').value;
             const apiKey = document.getElementById('api-key-input').value.trim();
-            const priority = parseInt(document.getElementById('priority-input').value) || 1;
 
             if (!apiKey) {
                 alert("API 키를 입력해주세요.");
                 return;
             }
 
-            const saveBtn = document.getElementById('save-btn');
-            saveBtn.disabled = true;
-            saveBtn.textContent = "검증 중...";
-
-            const isValid = await verifyApiKey(provider, apiKey);
-            saveBtn.disabled = false;
-            saveBtn.textContent = "API 키 검증 및 등록하기";
-
-            if (!isValid) {
-                alert("❌ 유효하지 않거나 만료된 API 키입니다.");
-                return;
-            }
+            // 로컬스토리지 백업 저장
+            localStorage.setItem(`ai_key_${currentUser.id}`, JSON.stringify({ provider, apiKey }));
 
             try {
-                await supabaseClient.from('user_ai_keys').insert([{ user_id: currentUser.id, provider, api_key: apiKey, priority, status: 'active' }]);
-                alert("✅ API 키가 구글 계정으로 안전하게 등록되었습니다!");
-                document.getElementById('api-key-input').value = '';
-                loadApiKeys();
-            } catch (err) {
-                alert("저장 실패: " + err.message);
-            }
+                await supabaseClient.from('user_ai_keys').upsert([{ 
+                    user_id: currentUser.id, 
+                    provider, 
+                    api_key: apiKey, 
+                    priority: 1, 
+                    status: 'active' 
+                }]);
+            } catch(e) { console.log(e); }
+
+            alert("✅ API 키가 등록되었습니다!");
+            document.getElementById('api-key-input').value = '';
+            loadApiKeys();
         }
 
         async function saveDartKey() {
@@ -308,7 +250,7 @@
                 return;
             }
             localStorage.setItem(`dart_key_${currentUser.id}`, dartKey);
-            alert("✅ DART 오픈API 인증키가 안전하게 저장되었습니다.");
+            alert("✅ DART 오픈API 인증키가 저장되었습니다.");
         }
 
         function loadDartKeyInput() {
@@ -323,71 +265,79 @@
             const container = document.getElementById('key-list-container');
             if (!container || !currentUser) return;
             
-            try {
-                const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p style="color:var(--muted); font-size:0.82rem;">등록된 API 키가 없습니다.</p>';
-                    return;
-                }
+            let activeKey = null;
 
-                container.innerHTML = '';
-                for (const item of data) {
-                    const div = document.createElement('div');
-                    div.className = 'key-item';
-                    div.innerHTML = `
-                        <span>[${item.provider.toUpperCase()}] 우선순위: ${item.priority}</span>
-                        <button class="danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="deleteApiKey('${item.id}')">삭제</button>
-                    `;
-                    container.appendChild(div);
-                }
-            } catch (err) {
-                console.error(err);
+            // Supabase 및 로컬 교차 확인
+            try {
+                const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id);
+                if (data && data.length > 0) activeKey = data[0].api_key;
+            } catch(e) {}
+
+            if (!activeKey) {
+                const localData = localStorage.getItem(`ai_key_${currentUser.id}`);
+                if (localData) activeKey = JSON.parse(localData).apiKey;
+            }
+
+            if (!activeKey) {
+                container.innerHTML = '<p style="color:var(--muted); font-size:0.82rem;">등록된 API 키가 없습니다.</p>';
+            } else {
+                container.innerHTML = `
+                    <div class="key-item">
+                        <span>[GEMINI] 등록 완료</span>
+                        <button class="danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="deleteApiKey()">삭제</button>
+                    </div>
+                `;
             }
         }
 
-        async function deleteApiKey(id) {
-            if (!confirm("정말 이 API 키를 삭제하시겠습니까?")) return;
-            await supabaseClient.from('user_ai_keys').delete().eq('id', id);
+        async function deleteApiKey() {
+            if (!confirm("삭제하시겠습니까?")) return;
+            localStorage.removeItem(`ai_key_${currentUser.id}`);
+            try { await supabaseClient.from('user_ai_keys').delete().eq('user_id', currentUser.id); } catch(e){}
             loadApiKeys();
         }
 
-        async function callAIWithKeyGeneric(keyItem, prompt) {
-            if (keyItem.provider === 'gemini') {
-                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${keyItem.api_key}`);
-                const listData = await listRes.json();
-                let modelName = 'gemini-1.5-flash';
-                if (listData.models) {
-                    const found = listData.models.find(m => m.name.includes('flash') || m.name.includes('1.5'));
-                    if (found) modelName = found.name.replace('models/', '');
-                }
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${keyItem.api_key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                if (response.ok && data.candidates) {
-                    return { text: data.candidates[0].content.parts[0].text };
-                }
-            } else if (keyItem.provider === 'openai') {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${keyItem.api_key}` },
-                    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }] })
-                });
-                const data = await response.json();
-                if (response.ok && data.choices) {
-                    return { text: data.choices[0].message.content };
-                }
+        // AI 직접 호출 함수 (오류 시 자동 Gemini 백업 모델 적용)
+        async function callGeminiDirectly(apiKey, prompt) {
+            const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+            for (let model of models) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
+                        return data.candidates[0].content.parts[0].text;
+                    }
+                } catch(e) { continue; }
             }
-            throw new Error("AI API 호출 실패");
+            throw new Error("API 키를 확인하거나 잠시 후 다시 시도해 주세요.");
         }
 
-        // --- 실시간 DART 연동 및 10년 재무제표 AI 분석 실행 ---
         async function runCorporateAnalysis() {
             const corpName = document.getElementById('corp-search-input').value.trim();
             if (!corpName) {
                 alert("분석할 기업명을 입력해주세요.");
+                return;
+            }
+
+            // API 키 가져오기
+            let apiKey = null;
+            const localData = localStorage.getItem(`ai_key_${currentUser.id}`);
+            if (localData) apiKey = JSON.parse(localData).apiKey;
+
+            if (!apiKey) {
+                try {
+                    const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id);
+                    if (data && data.length > 0) apiKey = data[0].api_key;
+                } catch(e){}
+            }
+
+            if (!apiKey) {
+                alert("등록된 AI API 키가 없습니다. 우측 상단의 [⚙️ 설정]에서 키를 입력해주세요.");
+                openSettingsModal();
                 return;
             }
 
@@ -398,93 +348,64 @@
 
             wrapper.classList.remove('hidden');
             resultContainer.innerHTML = '';
-            fill.style.width = '25%';
-            percentText.textContent = '25% (구글 계정 API 키 및 DART 연동 확인 중...)';
+            fill.style.width = '30%';
+            percentText.textContent = '30% (AI 및 공시 데이터 분석 준비...)';
 
             try {
-                const { data: keys } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
-                if (!keys || keys.length === 0) {
-                    alert("등록된 AI API 키가 없습니다. 우측 상단의 [⚙️ API 설정]에서 키를 먼저 등록해주세요.");
-                    wrapper.classList.add('hidden');
-                    return;
-                }
-
-                fill.style.width = '60%';
-                percentText.textContent = '60% (DART 전자공시 및 최근 10년 치 재무제표 상승/하락 원인 분석 중...)';
+                fill.style.width = '65%';
+                percentText.textContent = '65% (10년 치 재무 분석 보고서 생성 중...)';
 
                 const prompt = `
-당신은 대한민국 최고 수준의 수석 재무 분석가입니다. 대상 기업: "${corpName}"
-OpenDART 전자공시시스템의 최근 10년 치 재무제표(매출액, 영업이익, 당기순이익 등) 데이터와 공시 흐름을 바탕으로 다음 요구사항에 맞춰 분석 보고서를 작성해 주세요.
+당신은 대한민국 수석 재무 분석가입니다. 분석 대상: "${corpName}"
+OpenDART 전자공시 데이터와 10년간의 실적 흐름을 종합하여 다음 항목을 작성하세요.
 
 1. **기업 개요 및 10년 재무 트렌드 요약**
-2. **시기별 상승/하락/유지 구간 분석 및 구체적인 이유** (어떤 연도에 왜 실적이나 주가가 떨어졌고, 왜 상승했는지 원인 분석)
-3. **핵심 뉴스 헤드라인 및 이슈 카드 (4개 이상)**
-   - 각 변동 시기별 핵심 뉴스 타이틀을 선정하고, 사용자가 클릭하여 관련 뉴스를 검색할 수 있는 사각형 카드 형태(HTML/CSS 디자인 포함)로 구성해 주세요. 각 카드에는 구글 검색 링크(https://www.google.com/search?q=${encodeURIComponent(corpName)} [검색키워드])를 걸어주세요.
-4. **최종 투자 포인트 및 종합 평가**
+2. **시기별 상승/하락 원인 심층 분석** (주요 변동 연도별 실적 상승 및 하락 요인)
+3. **주요 뉴스 헤드라인 및 이슈 (4개 이상)** (각 시기별 핵심 뉴스 제목과 구글 검색 링크 포함)
+4. **종합 평가 및 최종 투자 포인트**
 
-출력은 마크다운 코드블록 없이 순수 HTML 태그로만 작성해 주세요. 스타일은 본 포트폴리오의 디자인 톤(카드형태 배경, 깔끔한 타이포그래피, 가독성 높은 여백)에 맞추어 작성해 주세요.
+출력은 HTML 태그로만 깔끔하게 작성해 주세요. (마크다운 코드블록 금지)
                 `;
 
-                let reportHtml = "";
-                for (let i = 0; i < keys.length; i++) {
-                    try {
-                        const res = await callAIWithKeyGeneric(keys[i], prompt);
-                        if (res && res.text) {
-                            reportHtml = res.text;
-                            break;
-                        }
-                    } catch (e) { continue; }
-                }
-
-                if (!reportHtml) throw new Error("AI 분석 생성에 실패했습니다.");
+                const reportHtml = await callGeminiDirectly(apiKey, prompt);
 
                 fill.style.width = '100%';
                 percentText.textContent = '100% (분석 완료!)';
-                setTimeout(() => wrapper.classList.add('hidden'), 500);
+                setTimeout(() => wrapper.classList.add('hidden'), 400);
 
                 resultContainer.innerHTML = `
                     <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
                         <h2 style="margin-top: 0; color: var(--navy);">🏢 ${corpName} 10년 재무 및 AI 분석 리포트</h2>
-                        <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">분석 일시: ${new Date().toLocaleString()} | 구글 계정 영구 연동 저장됨</p>
+                        <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">분석 일시: ${new Date().toLocaleString()} | 구글 계정 연동 저장됨</p>
                         <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
                         <div style="font-size: 0.95rem; line-height: 1.8;">${reportHtml}</div>
                     </div>
                 `;
 
-                // Supabase 및 로컬스토리지에 구글 계정 기준 영구 저장
-                const reportPayload = {
-                    user_id: currentUser.id,
-                    corp_name: corpName,
-                    report_html: reportHtml,
-                    updated_at: new Date().toISOString()
-                };
+                // 저장
+                const reportPayload = { user_id: currentUser.id, corp_name: corpName, report_html: reportHtml, updated_at: new Date().toISOString() };
                 localStorage.setItem(`latest_report_${currentUser.id}`, JSON.stringify(reportPayload));
-                await supabaseClient.from('user_corporate_reports').upsert(reportPayload, { onConflict: 'user_id, corp_name' });
+                try { await supabaseClient.from('user_corporate_reports').upsert(reportPayload, { onConflict: 'user_id, corp_name' }); } catch(e){}
 
             } catch (err) {
                 wrapper.classList.add('hidden');
-                alert("분석 중 오류 발생: " + err.message);
+                alert("분석 실패: " + err.message);
             }
         }
 
         async function loadUserSavedReport() {
             if (!currentUser) return;
-            try {
-                const { data } = await supabaseClient.from('user_corporate_reports').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false }).limit(1);
-                if (data && data.length > 0) {
-                    const latest = data[0];
-                    document.getElementById('corp-search-input').value = latest.corp_name;
-                    document.getElementById('corp-result-container').innerHTML = `
-                        <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
-                            <h2 style="margin-top: 0; color: var(--navy);">🏢 ${latest.corp_name} 10년 재무 및 AI 분석 리포트 (저장된 기록)</h2>
-                            <p style="font-size: 0.78rem; color: var(--muted); font-weight: 700;">최근 저장 일시: ${new Date(latest.updated_at).toLocaleString()} | 구글 계정 연동</p>
-                            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
-                            <div style="font-size: 0.95rem; line-height: 1.8;">${latest.report_html}</div>
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                console.error(e);
+            const localReport = localStorage.getItem(`latest_report_${currentUser.id}`);
+            if (localReport) {
+                const latest = JSON.parse(localReport);
+                document.getElementById('corp-search-input').value = latest.corp_name;
+                document.getElementById('corp-result-container').innerHTML = `
+                    <div class="card" style="margin:0; box-shadow:none; border: 1px solid var(--line);">
+                        <h2 style="margin-top: 0; color: var(--navy);">🏢 ${latest.corp_name} 10년 재무 및 AI 분석 리포트 (최근 기록)</h2>
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--line);">
+                        <div style="font-size: 0.95rem; line-height: 1.8;">${latest.report_html}</div>
+                    </div>
+                `;
             }
         }
     </script>
