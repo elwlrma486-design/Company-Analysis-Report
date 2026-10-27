@@ -61,14 +61,6 @@
         .progress-bar-container { width: 100%; background-color: #eef2f7; border-radius: 8px; height: 10px; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #4e8cff, var(--blue)); border-radius: 8px; transition: width 0.4s ease-in-out; }
 
-        /* 뉴스 헤드라인 카드 스타일 (클릭 가능) */
-        .news-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 20px; }
-        .news-thumbnail-card { background: #fafbfc; border: 1px solid var(--line); border-radius: 14px; padding: 18px; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        .news-thumbnail-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(57,120,246,0.12); border-color: var(--blue); background: #fff; }
-        .news-tag { font-size: 0.7rem; font-weight: 900; color: var(--blue); background: #edf3fa; padding: 4px 10px; border-radius: 6px; width: fit-content; margin-bottom: 10px; letter-spacing: 0.05em; }
-        .news-title { font-size: 0.92rem; font-weight: 800; color: var(--navy); line-height: 1.5; margin-bottom: 12px; }
-        .news-footer { font-size: 0.72rem; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-
         /* 모달 디자인 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(16,36,62,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: white; width: 90%; max-width: 600px; padding: 40px; border-radius: var(--radius); box-shadow: 0 25px 60px rgba(0,0,0,0.25); position: relative; max-height: 85vh; overflow-y: auto; }
@@ -86,9 +78,7 @@
     <!-- 상단바 -->
     <header class="topbar">
         <a class="logo" href="https://elwlrma486-design.github.io/portfolio/" target="_blank">HYUNMU<span>.</span> CORP ANALYSIS</a>
-        <div class="top-actions" id="top-nav-actions">
-            <!-- 동적으로 로그인 상태에 따라 변경됨 -->
-        </div>
+        <div class="top-actions" id="top-nav-actions"></div>
     </header>
 
     <div class="container">
@@ -97,7 +87,7 @@
             <p style="font-size: 0.75rem; font-weight: 900; letter-spacing: 0.15em; color: var(--blue); margin-bottom: 10px;">SECURE AI WORKFLOW</p>
             <h1 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 15px;">AI 자동 기업분석 시스템</h1>
             <p style="color: var(--muted); max-width: 500px; margin: 0 auto 30px auto; font-size: 0.95rem;">
-                구글 계정 인증을 통해 사용자의 분석 이력과 API 키가 안전하게 암호화·연동되며, DART 공시 데이터를 활용한 10년 치 재무제표 분석 리포트를 제공합니다.
+                구글 계정 인증을 통해 사용자의 분석 이력과 API 키가 안전하게 연동되며, DART 공시 데이터를 활용한 10년 치 재무제표 분석 리포트를 제공합니다.
             </p>
             <button onclick="handleGoogleLogin()" style="padding: 16px 32px; font-size: 1rem;">구글 계정으로 시작하기 ↗</button>
         </div>
@@ -168,7 +158,7 @@
             <div style="margin-bottom: 20px;">
                 <label style="font-size: 0.82rem; font-weight: 800; color: var(--navy);">DART 전자공시 오픈API 인증키 (선택)</label>
                 <a class="shortcut-link" href="https://opendart.fss.or.kr/uss/umr/EgovUserRequest.do" target="_blank">🔗 DART 오픈API 인증키 신청하기 (무료) ↗</a>
-                <input type="password" id="dart-key-input" placeholder="DART API 인증키 (8글자 이상)">
+                <input type="password" id="dart-key-input" placeholder="DART API 인증키 입력">
                 <button class="secondary" onclick="saveDartKey()" style="width: 100%;">DART 키 저장하기</button>
             </div>
 
