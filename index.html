@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyunmu AI - OpenDART & Gemini 기업 재무 분석 대시보드</title>
+    <title>Hyunmu AI - OpenDART 10년치 재무 분석 & Gemini AI 대시보드</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
@@ -31,9 +31,9 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                        Hyunmu AI Financial Analysis
+                        Hyunmu AI 10-Year Financial Analysis
                     </h1>
-                    <p class="text-xs text-slate-400">OpenDART 재무제표 & Gemini AI 자동 기업 분석 대시보드</p>
+                    <p class="text-xs text-slate-400">OpenDART 10개년 재무제표 자동 연동 & Gemini AI 기업 분석 대시보드</p>
                 </div>
             </div>
             
@@ -55,16 +55,16 @@
 
         <!-- Tab 1: 분석 메인 탭 -->
         <div id="tab-analysis-content" class="space-y-8">
-            <!-- 검색 및 설정 영역 -->
+            <!-- 검색 영역 (연도 선택 제거 완료) -->
             <div class="glass-card rounded-2xl p-6 relative z-40">
                 <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-building text-blue-400"></i> 국내 상장사 및 공시 기업 검색
+                    <i class="fa-solid fa-building text-blue-400"></i> 국내 상장사 및 공시 기업 검색 (최근 10개년 자동 연동)
                 </h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- 드롭다운 검색창 -->
                     <div class="md:col-span-2 relative">
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">기업명 또는 종목코드 (국내 상장/비상장사)</label>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">기업명 또는 종목코드</label>
                         <div class="relative">
                             <input type="text" id="company-search-input" oninput="handleSearchInput(this.value)" placeholder="예: 삼성전자, SK하이닉스, DB하이텍, 005930..." 
                                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
@@ -76,20 +76,10 @@
                         </div>
                     </div>
 
-                    <!-- 사업연도 선택 -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">분석 기준연도</label>
-                        <select id="bsns-year-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
-                            <option value="2023" selected>2023년 사업보고서</option>
-                            <option value="2022">2022년 사업보고서</option>
-                            <option value="2021">2021년 사업보고서</option>
-                        </select>
-                    </div>
-
                     <!-- 분석 시작 버튼 -->
                     <div class="flex items-end">
-                        <button id="analyze-btn" onclick="startFinancialAnalysis()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> AI 기업 분석 시작
+                        <button id="analyze-btn" onclick="start10YearFinancialAnalysis()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> 10년치 재무 AI 분석 시작
                         </button>
                     </div>
                 </div>
@@ -103,24 +93,24 @@
             <!-- 로딩 상태 스피너 -->
             <div id="loading-spinner" class="hidden glass-card rounded-2xl p-12 text-center">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
-                <h3 class="text-lg font-bold text-slate-200" id="loading-status-text">OpenDART 재무제표 수집 중...</h3>
-                <p class="text-xs text-slate-400 mt-2">OpenDART 수치 추출 후 Gemini 2.5 AI 모델이 심층 분석을 수행합니다.</p>
+                <h3 class="text-lg font-bold text-slate-200" id="loading-status-text">OpenDART 10개년 재무제표 수집 중...</h3>
+                <p class="text-xs text-slate-400 mt-2">과거 10개년 실적 데이터를 연이어 수집하고 있습니다. 잠시만 기다려주세요.</p>
             </div>
 
             <!-- 분석 결과 대시보드 -->
             <div id="dashboard-content" class="hidden space-y-8">
-                <!-- 1. 핵심 재무 지표 요약 카드 (Hyunmu 스타일) -->
+                <!-- 1. 최신년도 핵심 재무 지표 요약 카드 -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div class="glass-card p-4 rounded-xl border-l-4 border-blue-500">
-                        <span class="text-xs text-slate-400 block font-medium">매출액</span>
+                        <span class="text-xs text-slate-400 block font-medium">최신 매출액</span>
                         <span id="metric-revenue" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
                     </div>
                     <div class="glass-card p-4 rounded-xl border-l-4 border-emerald-500">
-                        <span class="text-xs text-slate-400 block font-medium">영업이익</span>
+                        <span class="text-xs text-slate-400 block font-medium">최신 영업이익</span>
                         <span id="metric-op-profit" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
                     </div>
                     <div class="glass-card p-4 rounded-xl border-l-4 border-indigo-500">
-                        <span class="text-xs text-slate-400 block font-medium">당기순이익</span>
+                        <span class="text-xs text-slate-400 block font-medium">최신 당기순이익</span>
                         <span id="metric-net-profit" class="text-lg font-bold text-slate-100 mt-1 block">-</span>
                     </div>
                     <div class="glass-card p-4 rounded-xl border-l-4 border-amber-500">
@@ -137,29 +127,31 @@
                     </div>
                 </div>
 
-                <!-- 2. 시각화 차트 & 재무제표 수치 요약 -->
+                <!-- 2. 10개년 시각화 차트 & 연도별 재무 추이 표 -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- 차트 -->
+                    <!-- 10개년 추이 차트 -->
                     <div class="glass-card rounded-2xl p-6">
                         <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column text-emerald-400"></i> 주요 재무 실적 시각화
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> 10개년 매출액 & 영업이익 추이
                         </h3>
                         <div class="h-64 relative">
                             <canvas id="financialChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- 원본 수치 표 -->
+                    <!-- 10개년 재무 요약 테이블 -->
                     <div class="glass-card rounded-2xl p-6">
                         <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-scale-balanced text-indigo-400"></i> 주요 재무제표 요약 (단위: 억 원)
+                            <i class="fa-solid fa-table text-indigo-400"></i> 10개년 연도별 실적 요약 (단위: 억 원)
                         </h3>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto max-h-64 dropdown-scroll">
                             <table class="w-full text-xs text-left text-slate-300">
-                                <thead class="bg-slate-800 text-slate-400 uppercase border-b border-slate-700">
+                                <thead class="bg-slate-800 text-slate-400 uppercase border-b border-slate-700 sticky top-0">
                                     <tr>
-                                        <th class="py-2.5 px-3">항목</th>
-                                        <th class="py-2.5 px-3 text-right">금액</th>
+                                        <th class="py-2 px-3">사업연도</th>
+                                        <th class="py-2 px-3 text-right">매출액</th>
+                                        <th class="py-2 px-3 text-right">영업이익</th>
+                                        <th class="py-2 px-3 text-right">순이익</th>
                                     </tr>
                                 </thead>
                                 <tbody id="financial-table-body" class="divide-y divide-slate-800">
@@ -169,7 +161,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Gemini AI 리포트 -->
+                <!-- 3. Gemini AI 10년치 심층 분석 리포트 -->
                 <div class="glass-card rounded-2xl p-8 border border-blue-500/30">
                     <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
                         <div class="flex items-center gap-3">
@@ -177,8 +169,8 @@
                                 <i class="fa-solid fa-brain text-xl"></i>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-white">Gemini AI 심층 재무 및 기업 리포트</h3>
-                                <p class="text-xs text-slate-400">OpenDART 실시간 공시 데이터 기반 AI 기업 진단</p>
+                                <h3 class="text-lg font-bold text-white">Gemini AI 10개년 딥다이브 재무 및 성장성 리포트</h3>
+                                <p class="text-xs text-slate-400">OpenDART 10년 치 시계열 데이터를 바탕으로 한 종합 분석</p>
                             </div>
                         </div>
                         <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs px-3 py-1 rounded-full font-semibold">
@@ -197,7 +189,7 @@
             <div class="glass-card rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-history text-indigo-400"></i> 기업 분석 보관함 (Supabase 연동)
+                        <i class="fa-solid fa-history text-indigo-400"></i> 10년치 분석 보관함 (Supabase 연동)
                     </h2>
                     <button onclick="loadHistoryFromSupabase()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-slate-300">
                         🔄 새로고침
@@ -212,7 +204,7 @@
 
     </main>
 
-    <!-- 설정 모달 (OpenDART, Gemini, Supabase) -->
+    <!-- 설정 모달 -->
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="glass-card bg-slate-900 w-full max-w-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
             <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -251,7 +243,6 @@
 
     <!-- 스크립트 로직 -->
     <script>
-        // Supabase 기본 세팅 (기존 프로젝트 수치 기본 연동)
         const DEFAULT_SUPABASE_URL = 'https://anxsobfzqimqhvzubeoy.supabase.co';
         const DEFAULT_SUPABASE_KEY = 'sb_publishable_l6radcv0p29neEcapKGmtQ_bDiMBK_A';
 
@@ -259,7 +250,6 @@
         let corpCodeList = [];
         let selectedCorp = null;
         let chartInstance = null;
-        let historyData = [];
 
         window.addEventListener('DOMContentLoaded', async () => {
             loadSavedKeys();
@@ -279,9 +269,7 @@
             const url = localStorage.getItem('supabase_url') || DEFAULT_SUPABASE_URL;
             const key = localStorage.getItem('supabase_key') || DEFAULT_SUPABASE_KEY;
             if (url && key) {
-                try {
-                    supabaseClient = supabase.createClient(url, key);
-                } catch(e) { console.error('Supabase 연결 실패:', e); }
+                try { supabaseClient = supabase.createClient(url, key); } catch(e) {}
             }
         }
 
@@ -293,7 +281,6 @@
             localStorage.setItem('gemini_api_key', document.getElementById('gemini-api-key-input').value.trim());
             localStorage.setItem('supabase_url', document.getElementById('supabase-url-input').value.trim());
             localStorage.setItem('supabase_key', document.getElementById('supabase-key-input').value.trim());
-            
             initSupabase();
             alert('설정이 저장되었습니다!');
             closeSettingsModal();
@@ -335,11 +322,7 @@
         function handleSearchInput(query) {
             const dropdown = document.getElementById('search-dropdown');
             const cleanQuery = query.trim().toLowerCase();
-
-            if (!cleanQuery) {
-                dropdown.classList.add('hidden');
-                return;
-            }
+            if (!cleanQuery) { dropdown.classList.add('hidden'); return; }
 
             const matches = corpCodeList.filter(c => 
                 c.corp_name.toLowerCase().includes(cleanQuery) || 
@@ -357,7 +340,6 @@
                     </div>
                 `).join('');
             }
-
             dropdown.classList.remove('hidden');
         }
 
@@ -372,7 +354,8 @@
             document.getElementById('selected-company-info').classList.remove('hidden');
         }
 
-        async function startFinancialAnalysis() {
+        // 10개년 자동 연동 분석 핵심 함수
+        async function start10YearFinancialAnalysis() {
             const dartKey = localStorage.getItem('opendart_api_key');
             const geminiKey = localStorage.getItem('gemini_api_key');
 
@@ -387,49 +370,67 @@
                 return;
             }
 
-            const year = document.getElementById('bsns-year-select').value;
             const spinner = document.getElementById('loading-spinner');
             const dashboard = document.getElementById('dashboard-content');
             const statusText = document.getElementById('loading-status-text');
 
             spinner.classList.remove('hidden');
             dashboard.classList.add('hidden');
-            statusText.textContent = `[${selectedCorp.corpName}] DART 공시 재무제표 수집 중...`;
+
+            const currentYear = new Date().getFullYear();
+            const startYear = currentYear - 10;
+            let yearlyDataList = [];
 
             try {
-                // OpenDART API 연동
-                const dartUrl = `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${dartKey}&corp_code=${selectedCorp.corpCode}&bsns_year=${year}&reprt_code=11011`;
-                const dartRes = await fetch(dartUrl);
-                const dartData = await dartRes.json();
-
-                if (dartData.status !== '000' || !dartData.list) {
-                    throw new Error(dartData.message || '재무제표 데이터를 수집할 수 없습니다.');
+                // 최근 10개년 연도별 반복 호출 (2015 ~ 2024 등)
+                for (let y = startYear; y < currentYear; y++) {
+                    statusText.textContent = `[${selectedCorp.corpName}] ${y}년도 DART 재무제표 수집 중...`;
+                    const dartUrl = `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${dartKey}&corp_code=${selectedCorp.corpCode}&bsns_year=${y}&reprt_code=11011`;
+                    
+                    // CORS 우회 프록시 적용
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(dartUrl)}`;
+                    
+                    try {
+                        const res = await fetch(proxyUrl);
+                        const data = await res.json();
+                        if (data.status === '000' && data.list) {
+                            const parsed = parseSingleYearData(y, data.list);
+                            if (parsed.revenue > 0) yearlyDataList.push(parsed);
+                        }
+                    } catch(innerErr) {
+                        console.warn(`${y}년 데이터 수집 스킵:`, innerErr);
+                    }
                 }
 
-                const financialSummary = processDartFinancialData(dartData.list);
-                renderMetricsAndTable(financialSummary);
-                renderChart(financialSummary);
+                if (yearlyDataList.length === 0) {
+                    throw new Error('수집된 10개년 재무 데이터가 없습니다. (API 키 오류 또는 미공시 기업)');
+                }
 
-                // Gemini AI 분석
-                statusText.textContent = `Gemini AI가 [${selectedCorp.corpName}] 재무 리포트를 생성하는 중...`;
-                const aiReport = await callGeminiAnalysis(geminiKey, selectedCorp.corpName, year, financialSummary);
+                // 최신 연도 기준 정렬 및 최근 데이터 추출
+                yearlyDataList.sort((a, b) => a.year - b.year);
+                const latest = yearlyDataList[yearlyDataList.length - 1];
+
+                renderLatestMetricsAndTable(latest, yearlyDataList);
+                render10YearChart(yearlyDataList);
+
+                statusText.textContent = `Gemini AI가 [${selectedCorp.corpName}] 10개년 시계열 트렌드 분석 중...`;
+                const aiReport = await callGemini10YearAnalysis(geminiKey, selectedCorp.corpName, yearlyDataList);
 
                 document.getElementById('ai-report-container').innerHTML = aiReport;
 
                 spinner.classList.add('hidden');
                 dashboard.classList.remove('hidden');
 
-                // Supabase 클라우드 DB 저장
-                saveHistoryToSupabase(selectedCorp.corpName, year, financialSummary, aiReport);
+                saveHistoryToSupabase(selectedCorp.corpName, latest, aiReport);
 
             } catch (err) {
                 spinner.classList.add('hidden');
-                alert('분석 중 오류 발생: ' + err.message);
+                alert('10년치 분석 중 오류 발생: ' + err.message);
             }
         }
 
-        function processDartFinancialData(list) {
-            let data = { revenue: 0, opProfit: 0, netProfit: 0, assets: 0, liabilities: 0, equity: 0 };
+        function parseSingleYearData(year, list) {
+            let data = { year: year, revenue: 0, opProfit: 0, netProfit: 0, assets: 0, liabilities: 0, equity: 0 };
             list.forEach(item => {
                 const amount = parseInt(item.thstrm_amount.replace(/,/g, '')) || 0;
                 const nm = item.account_nm;
@@ -443,48 +444,60 @@
             return data;
         }
 
-        function renderMetricsAndTable(f) {
+        function renderLatestMetricsAndTable(latest, allYears) {
             const formatEok = (num) => (num / 100000000).toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + ' 억 원';
-            document.getElementById('metric-revenue').textContent = formatEok(f.revenue);
-            document.getElementById('metric-op-profit').textContent = formatEok(f.opProfit);
-            document.getElementById('metric-net-profit').textContent = formatEok(f.netProfit);
-            document.getElementById('metric-assets').textContent = formatEok(f.assets);
-
-            document.getElementById('metric-debt-ratio').textContent = f.equity ? ((f.liabilities / f.equity) * 100).toFixed(1) + '%' : 'N/A';
-            document.getElementById('metric-roe').textContent = f.equity ? ((f.netProfit / f.equity) * 100).toFixed(1) + '%' : 'N/A';
+            
+            document.getElementById('metric-revenue').textContent = formatEok(latest.revenue);
+            document.getElementById('metric-op-profit').textContent = formatEok(latest.opProfit);
+            document.getElementById('metric-net-profit').textContent = formatEok(latest.netProfit);
+            document.getElementById('metric-assets').textContent = formatEok(latest.assets);
+            document.getElementById('metric-debt-ratio').textContent = latest.equity ? ((latest.liabilities / latest.equity) * 100).toFixed(1) + '%' : 'N/A';
+            document.getElementById('metric-roe').textContent = latest.equity ? ((latest.netProfit / latest.equity) * 100).toFixed(1) + '%' : 'N/A';
 
             const tbody = document.getElementById('financial-table-body');
-            tbody.innerHTML = `
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">매출액</td><td class="py-2 px-3 text-right font-bold text-blue-400">${formatEok(f.revenue)}</td></tr>
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">영업이익</td><td class="py-2 px-3 text-right font-bold text-emerald-400">${formatEok(f.opProfit)}</td></tr>
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">당기순이익</td><td class="py-2 px-3 text-right font-bold text-indigo-400">${formatEok(f.netProfit)}</td></tr>
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">자산총계</td><td class="py-2 px-3 text-right">${formatEok(f.assets)}</td></tr>
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">부채총계</td><td class="py-2 px-3 text-right">${formatEok(f.liabilities)}</td></tr>
-                <tr><td class="py-2 px-3 font-semibold text-slate-200">자본총계</td><td class="py-2 px-3 text-right">${formatEok(f.equity)}</td></tr>
-            `;
+            tbody.innerHTML = allYears.slice().reverse().map(y => `
+                <tr class="hover:bg-slate-800/50">
+                    <td class="py-2 px-3 font-bold text-white">${y.year}년</td>
+                    <td class="py-2 px-3 text-right text-blue-400">${formatEok(y.revenue)}</td>
+                    <td class="py-2 px-3 text-right text-emerald-400">${formatEok(y.opProfit)}</td>
+                    <td class="py-2 px-3 text-right text-indigo-400">${formatEok(y.netProfit)}</td>
+                </tr>
+            `).join('');
         }
 
-        function renderChart(f) {
+        function render10YearChart(allYears) {
             const ctx = document.getElementById('financialChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: ['매출액', '영업이익', '당기순이익'],
-                    datasets: [{
-                        label: '금액 (억 원)',
-                        data: [f.revenue / 100000000, f.opProfit / 100000000, f.netProfit / 100000000],
-                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(99, 102, 241, 0.7)'],
-                        borderColor: ['#3b82f6', '#10b981', '#6366f1'],
-                        borderWidth: 1.5,
-                        borderRadius: 8
-                    }]
+                    labels: allYears.map(y => `${y.year}년`),
+                    datasets: [
+                        {
+                            label: '매출액 (억 원)',
+                            data: allYears.map(y => y.revenue / 100000000),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        },
+                        {
+                            label: '영업이익 (억 원)',
+                            data: allYears.map(y => y.opProfit / 100000000),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 11 } } } },
                     scales: {
                         y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
                         x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
@@ -493,26 +506,23 @@
             });
         }
 
-        async function callGeminiAnalysis(apiKey, corpName, year, f) {
+        async function callGemini10YearAnalysis(apiKey, corpName, allYears) {
+            const summaryText = allYears.map(y => 
+                `- ${y.year}년: 매출액 ${(y.revenue/1e8).toFixed(0)}억, 영업이익 ${(y.opProfit/1e8).toFixed(0)}억, 순이익 ${(y.netProfit/1e8).toFixed(0)}억, 부채비율 ${y.equity?(y.liabilities/y.equity*100).toFixed(1):0}%`
+            ).join('\n');
+
             const prompt = `
-당신은 대한민국 최고 신용평가사 및 기업 리서치 애널리스트입니다.
-[${corpName}]의 ${year}년도 공시 재무제표 수치를 바탕으로 종합 기업 분석 리포트를 작성하세요.
+당신은 대한민국 최고 수석 재무 애널리스트입니다.
+[${corpName}]의 최근 10개년 실적 시계열 데이터를 바탕으로 심층적인 기업 분석 리포트를 작성해 주세요.
 
-[재무제표 데이터]
-- 매출액: ${(f.revenue / 100000000).toFixed(0)}억 원
-- 영업이익: ${(f.opProfit / 100000000).toFixed(0)}억 원
-- 당기순이익: ${(f.netProfit / 100000000).toFixed(0)}억 원
-- 자산총계: ${(f.assets / 100000000).toFixed(0)}억 원
-- 부채총계: ${(f.liabilities / 100000000).toFixed(0)}억 원
-- 자본총계: ${(f.equity / 100000000).toFixed(0)}억 원
-- 부채비율: ${f.equity ? ((f.liabilities / f.equity) * 100).toFixed(1) : 0}%
-- ROE: ${f.equity ? ((f.netProfit / f.equity) * 100).toFixed(1) : 0}%
+[10개년 실적 데이터]
+${summaryText}
 
-다음 구조를 포함한 HTML 태그로 출력하세요:
-1. <b>📊 종합 재무 건전성 및 펀더멘털 진단</b>
-2. <b>📈 수익성 및 성장 가능성 (영업이익률 및 ROE 기반)</b>
-3. <b>⚠️ 핵심 부채 구조 및 잠재적 리스크 분석</b>
-4. <b>🎯 최종 AI 종합 평점 및 투자 체크포인트</b>
+다음 구조를 포함한 깔끔한 HTML 태그 형태로 응답해 주세요:
+1. <b>📈 10개년 장기 성장성 및 매출 추이 분석</b>
+2. <b>💰 수익성 변동성 및 영업이익 사이클 진단</b>
+3. <b>⚖️ 재무 안정성 및 자본 구조 장기 변화</b>
+4. <b>🎯 최종 AI 종합 투자 평가 및 향후 전망</b>
 `;
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -523,23 +533,22 @@
             });
 
             const data = await response.json();
-            if (!response.ok || !data.candidates) throw new Error(data.error?.message || 'Gemini 호출 실패');
+            if (!response.ok || !data.candidates) throw new Error(data.error?.message || 'Gemini 분석 실패');
             return data.candidates[0].content.parts[0].text;
         }
 
-        async function saveHistoryToSupabase(corpName, year, summary, report) {
+        async function saveHistoryToSupabase(corpName, latest, report) {
             if (!supabaseClient) return;
             try {
-                const payload = {
+                await supabaseClient.from('financial_analysis_history').insert([{
                     corp_name: corpName,
-                    bsns_year: year,
-                    revenue: summary.revenue,
-                    op_profit: summary.opProfit,
+                    bsns_year: '최근 10개년 시계열',
+                    revenue: latest.revenue,
+                    op_profit: latest.opProfit,
                     report_html: report,
                     created_at: new Date().toISOString()
-                };
-                await supabaseClient.from('financial_analysis_history').insert([payload]);
-            } catch(e) { console.error('Supabase 저장 예외:', e); }
+                }]);
+            } catch(e) {}
         }
 
         async function loadHistoryFromSupabase() {
@@ -565,15 +574,13 @@
                     <div class="glass-card p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-sm font-bold text-white">${item.corp_name}</span>
-                            <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">${item.bsns_year}년</span>
+                            <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">10년치 분석</span>
                         </div>
-                        <p class="text-xs text-slate-400">매출: ${(item.revenue / 100000000).toFixed(0)}억 원 | 영업이익: ${(item.op_profit / 100000000).toFixed(0)}억 원</p>
+                        <p class="text-xs text-slate-400">최신 매출: ${(item.revenue / 100000000).toFixed(0)}억 원</p>
                         <p class="text-[10px] text-slate-500 mt-2">${new Date(item.created_at).toLocaleString('ko-KR')}</p>
                     </div>
                 `).join('');
-            } catch(e) {
-                container.innerHTML = '<p class="text-rose-400 text-xs col-span-full">히스토리를 가져오지 못했습니다.</p>';
-            }
+            } catch(e) {}
         }
     </script>
 </body>
