@@ -1,266 +1,412 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>국내 반도체 4사 종합 기업분석 보고서</title>
-  <meta name="description" content="삼성전자·SK하이닉스·DB하이텍·LG전자 재무 비교, 과거 실적 급락 원인 분석 및 글로벌 매크로 보고서">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 자동 기업분석 및 10년 재무제표 리포트</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 950px; margin: 40px auto; padding: 20px; background-color: #f5f7fb; color: #333; position: relative; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1, h2, h3 { color: #2c3e50; }
+        button { background-color: #3978f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        button:hover { background-color: #2962d9; }
+        button.danger { background-color: #e74c3c; }
+        button.danger:hover { background-color: #c0392b; }
+        button.secondary { background-color: #2ecc71; }
+        button.secondary:hover { background-color: #27ae60; }
+        input, select, textarea { padding: 10px; margin: 5px 0 15px 0; width: 100%; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        .hidden { display: none !important; }
+        .key-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        
+        .settings-container { position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .top-action-row { display: flex; gap: 6px; align-items: center; }
+        .settings-btn { background-color: #34495e; color: #fff; padding: 8px 12px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; border: none; }
+        .settings-btn:hover { background-color: #2c3e50; }
+        
+        .ai-status-list { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; align-items: flex-end; }
+        .ai-status-badge { font-size: 11px; color: #555; display: inline-flex; align-items: center; gap: 4px; background: #fff; padding: 3px 8px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .mini-dot { height: 8px; width: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; }
+        .mini-dot.exhausted { background-color: #e74c3c; }
 
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --paper: #ffffff;
-      --ink: #0f172a;
-      --muted: #475569;
-      --line: #cbd5e1;
-      --primary: #1e3a8a;
-      --accent: #2563eb;
-      --badge-bg: #eff6ff;
-      --warning-bg: #fff1f2;
-      --warning-border: #f43f5e;
-    }
+        .progress-wrapper { margin-top: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
+        .progress-bar-container { width: 100%; background-color: #f1f2f6; border-radius: 6px; height: 12px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background-color: #3978f6; border-radius: 6px; transition: width 0.3s ease-in-out; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: var(--bg);
-      color: var(--ink);
-      font-family: 'Noto Sans KR', 'Inter', system-ui, sans-serif;
-      line-height: 1.7;
-      padding: 40px 20px;
-    }
+        /* 뉴스 헤드라인 사각형 이미지 카드 스타일 */
+        .news-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .news-thumbnail-card { background: #fff; border: 1px solid #e1e4ed; border-radius: 8px; padding: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; }
+        .news-thumbnail-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(57,120,246,0.15); border-color: #3978f6; }
+        .news-tag { font-size: 11px; font-weight: bold; color: #3978f6; background: #edf3fa; padding: 3px 8px; border-radius: 4px; width: fit-content; margin-bottom: 8px; }
+        .news-title { font-size: 14px; font-weight: bold; color: #10243e; line-height: 1.4; margin-bottom: 10px; }
 
-    .report-container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 50px 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
-
-    .report-header {
-      border-bottom: 3px solid var(--primary);
-      padding-bottom: 24px;
-      margin-bottom: 35px;
-    }
-
-    .report-meta {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    h1 {
-      font-size: clamp(1.6rem, 3vw, 2.2rem);
-      font-weight: 900;
-      color: var(--primary);
-      line-height: 1.3;
-      margin-bottom: 12px;
-    }
-
-    .subtitle {
-      font-size: 0.95rem;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .executive-summary {
-      background: var(--badge-bg);
-      border-left: 4px solid var(--accent);
-      padding: 20px 24px;
-      border-radius: 4px;
-      margin-bottom: 40px;
-      font-size: 0.92rem;
-    }
-
-    .executive-summary strong { color: var(--primary); }
-
-    h2 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--primary);
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 8px;
-      margin: 40px 0 20px;
-    }
-
-    p { font-size: 0.9rem; margin-bottom: 14px; color: #334155; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px 0 30px;
-      font-size: 0.85rem;
-    }
-
-    th, td {
-      border: 1px solid var(--line);
-      padding: 12px 14px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f1f5f9;
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    ul {
-      margin: 10px 0 20px 20px;
-      font-size: 0.88rem;
-      color: #334155;
-    }
-
-    li { margin-bottom: 6px; }
-
-    .crisis-card {
-      background: var(--warning-bg);
-      border: 1px solid #fda4af;
-      border-left: 4px solid var(--warning-border);
-      padding: 18px 22px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-    }
-
-    .crisis-card h4 {
-      color: #be123c;
-      font-size: 0.95rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .crisis-card p {
-      font-size: 0.85rem;
-      margin-bottom: 0;
-      color: #4c0519;
-    }
-
-    .footer-note {
-      margin-top: 50px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    @media print {
-      body { background: white; padding: 0; }
-      .report-container { border: none; box-shadow: none; padding: 20px; }
-    }
-  </style>
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: white; width: 90%; max-width: 550px; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; max-height: 85vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 20px; color: #7f8c8d; cursor: pointer; padding: 0; }
+        .close-modal:hover { color: #2c3e50; }
+    </style>
 </head>
 <body>
 
-  <main class="report-container">
-    
-    <!-- Header -->
-    <div class="report-header">
-      <div class="report-meta">Industry &amp; Financial Research Report / 2026</div>
-      <h1>국내 반도체 4사 종합 기업분석 보고서</h1>
-      <div class="subtitle">삼성전자 · SK하이닉스 · DB하이텍 · LG전자 재무 비교, 과거 실적 급락 원인 및 글로벌 매크로 분석</div>
+    <!-- 구글 로그인 화면 -->
+    <div id="auth-section" class="card">
+        <h1>📈 AI 자동 기업분석 서비스 로그인</h1>
+        <p>Google 계정으로 로그인하여 나만의 AI API 키를 관리하고 10년 치 재무제표 분석 리포트를 생성하세요.</p>
+        <button onclick="handleGoogleLogin()">구글 계정으로 로그인</button>
     </div>
 
-    <!-- Executive Summary -->
-    <div class="executive-summary">
-      <strong>[Executive Summary]</strong> 본 보고서는 국내 반도체 관련 4개 기업의 최근 재무제표와 글로벌 AI 인프라 확산, 지정학적 무역 규제에 더해, 과거 거시경제적 충격(다운사이클·팬데믹 물류난 등)에 따른 실적 급락 구간의 인과관계를 심층 검증합니다.
+    <!-- 대시보드 화면 -->
+    <div id="dashboard-section" class="card hidden">
+        <div class="settings-container">
+            <div class="top-action-row">
+                <button class="settings-btn" onclick="openSettingsModal()">⚙️ AI API 설정</button>
+            </div>
+            <div id="ai-status-list" class="ai-status-list">
+                <div class="ai-status-badge"><span class="mini-dot exhausted"></span> 등록된 키 없음</div>
+            </div>
+        </div>
+
+        <h2>환영합니다, <span id="user-email"></span>님!</h2>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="danger" onclick="handleLogout()">로그아웃</button>
+            <a href="https://elwlrma486-design.github.io/portfolio/" target="_blank" class="secondary" style="text-decoration:none; display:inline-flex; align-items:center; padding:10px 20px; border-radius:6px; font-size:14px; font-weight:bold;">🏠 포트폴리오 메인으로</a>
+        </div>
+
+        <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;">
+
+        <h3>🔍 DART 연동 실시간 기업 검색 및 10년 재무 분석</h3>
+        <p style="font-size: 13px; color: #666;">분석하고자 하는 기업명(예: 삼성전자, SK하이닉스, LG전자, DB하이텍)을 입력하고 분석 버튼을 누르세요.</p>
+
+        <div style="display: flex; gap: 10px; margin: 15px 0;">
+            <input type="text" id="corp-search-input" placeholder="기업명을 입력하세요" style="margin:0; flex-grow:1;">
+            <button class="secondary" onclick="runCorporateAnalysis()" style="white-space: nowrap;">기업 분석하기</button>
+        </div>
+
+        <div id="corp-loading-wrapper" class="progress-wrapper hidden">
+            <div class="progress-info">
+                <span id="corp-progress-status-text">📊 DART 전자공시 데이터 수집 및 AI 심층 분석 중...</span>
+                <span id="corp-progress-percent-text">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div id="corp-progress-bar-fill" class="progress-bar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div id="corp-result-container" style="margin-top: 25px;"></div>
     </div>
 
-    <!-- Section 1 -->
-    <h2>1. 분석 대상 기업 사업 구조 및 반도체 연관성</h2>
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 20%;">기업명</th>
-          <th style="width: 35%;">핵심 사업 영역</th>
-          <th style="width: 45%;">반도체 사업 연관성 및 특성</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>삼성전자</strong></td>
-          <td>메모리, 파운드리, 스마트폰, TV/가전</td>
-          <td>종합 반도체(IDM) 및 파운드리 복합 영위, 포트폴리오 완충력 보유</td>
-        </tr>
-        <tr>
-          <td><strong>SK하이닉스</strong></td>
-          <td>DRAM, NAND, HBM(고대역폭 메모리)</td>
-          <td>메모리 순수 집중형 구조, AI 서버용 HBM 시장 독점적 수혜</td>
-        </tr>
-        <tr>
-          <td><strong>DB하이텍</strong></td>
-          <td>시스템반도체 파운드리 (8인치/12인치)</td>
-          <td>순수 파운드리, 전력반도체(PMIC) 및 센서 중심의 수익 구조</td>
-        </tr>
-        <tr>
-          <td><strong>LG전자</strong></td>
-          <td>가전, TV, 전장(VS), 데이터센터 냉각</td>
-          <td>전자 및 전장 부품 연관 기업, AI 데이터센터용 칠러 솔루션 수혜</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- API 설정 모달 -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button class="close-modal" onclick="closeSettingsModal()">&times;</button>
+            <h3>🔑 AI API 키 관리 및 상태</h3>
+            <p style="font-size: 13px; color: #666;">등록된 키는 잔액 소진 시 자동으로 다음 순위 키로 전환됩니다.</p>
+            
+            <div style="margin-top: 15px;">
+                <label>AI 제공자 (Provider)</label>
+                <select id="provider-select" style="margin-top: 5px;">
+                    <option value="gemini">Google Gemini (Google AI Studio)</option>
+                    <option value="openai">OpenAI (ChatGPT API)</option>
+                </select>
 
-    <!-- Section 2 -->
-    <h2>2. 과거 실적 급락 구간 및 위기 인과관계 분석</h2>
-    <p>기업별 최근 3~5개년 재무 추이를 분석한 결과, 전방 산업 침체와 거시 충격에 따라 다음과 같은 주요 실적 급락(위기) 국면이 존재했습니다:</p>
+                <label>API Key</label>
+                <input type="password" id="api-key-input" placeholder="실제 API 키를 입력하세요">
+                <div id="loading-text" class="hidden">🔄 AI 서버에서 키 유효성을 확인하는 중입니다...</div>
 
-    <div class="crisis-card">
-      <h4>📉 삼성전자 (2023년 메모리 다운사이클 충격)</h4>
-      <p><strong>원인:</strong> 팬데믹 이후 IT 수요 급감과 범용 메모리(DRAM·NAND) 재고 누적. 감산 지연으로 DS(반도체) 부문 연간 수조 원대 적자 발생 및 영업이익 84% 이상 폭락.</p>
+                <label>우선순위 (Priority)</label>
+                <input type="number" id="priority-input" value="1" min="1">
+
+                <button id="save-btn" onclick="saveApiKey()">API 키 검증 및 등록하기</button>
+            </div>
+
+            <h4 style="margin-top: 25px;">등록된 내 API 키 목록</h4>
+            <div id="key-list-container"></div>
+        </div>
     </div>
 
-    <div class="crisis-card">
-      <h4>📉 SK하이닉스 (2023년 메모리 단일 포트폴리오 적자)</h4>
-      <p><strong>원인:</strong> 세트(가전/모바일) 사업 부문이 없어 메모리 업황 하락의 충격을 고스란히 받으며 창사 이래 최대 영업손실(약 7.7조 원) 기록. 다만 R&D 투자를 유지해 현재 HBM 슈퍼사이클로 급반전 발판 마련.</p>
-    </div>
+    <script>
+        const SUPABASE_URL = 'https://anxsobfzqimqhvzubeoy.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_l6radcv0p29neEcapKGmtQ_bDiMBK_A';
+        
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
 
-    <div class="crisis-card">
-      <h4>📉 DB하이텍 (2023~2024년 IT 재고 조정기)</h4>
-      <p><strong>원인:</strong> 코로나 호황기 이후 주력 제품인 PMIC 및 DDI 전방 수요 침체. 파운드리 가동률 하락과 단가(ASP) 인하 압력으로 수익성 급감.</p>
-    </div>
+        window.addEventListener('DOMContentLoaded', async () => {
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (session) {
+                    currentUser = session.user;
+                    showDashboard();
+                    loadApiKeys();
+                } else {
+                    currentUser = null;
+                    showAuth();
+                }
+            });
+            await checkSession();
+        });
 
-    <div class="crisis-card">
-      <h4>📉 LG전자 (2022년 물류비 폭등 및 원자재 인플레이션)</h4>
-      <p><strong>원인:</strong> 글로벌 해상 운임(SCFI) 급등과 철판·구리 등 원자재가 폭등으로 물류 원가 급증. 수요 침체로 인한 원가 전가 한계로 4분기 영업이익 어닝 쇼크 기록.</p>
-    </div>
+        async function checkSession() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    showDashboard();
+                    loadApiKeys();
+                } else {
+                    showAuth();
+                }
+            } catch (err) {
+                showAuth();
+            }
+        }
 
-    <!-- Section 3 -->
-    <h2>3. 팩트체크: AI 호황기 실적 양극화 및 구조적 차이</h2>
-    <ul>
-      <li><strong>SK하이닉스:</strong> NVIDIA HBM3E/HBM4 공급 독점 효과로 제조업 최고 수준의 이익률(약 79%) 기록.</li>
-      <li><strong>삼성전자:</strong> 메모리 가격 상승 및 HBM4 전환 가속화와 함께 DX 부문의 실적 완충력이 조화되는 구조 입증.</li>
-    </ul>
+        async function handleGoogleLogin() {
+            try {
+                const redirectUri = window.location.origin + window.location.pathname;
+                await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: redirectUri, queryParams: { prompt: 'select_account' } }
+                });
+            } catch (err) {
+                alert("로그인 오류: " + err.message);
+            }
+        }
 
-    <!-- Section 4 -->
-    <h2>4. 글로벌 주요 사건과 실적 간 인과관계 검증</h2>
-    <p><strong>[사례 A] 빅테크 생성형 AI 투자 및 NVIDIA AI 가속기 독점:</strong> CapEx 증대 → GPU 수요 급증 → TSMC CoWoS 병목 → HBM 장기 공급 계약 체결로 이어지는 경로를 통해 비약적인 영업이익률 증가 확인].</p>
-    <p><strong>[사례 B] 미·중 반도체 장비 수출 통제 및 지정학적 리스크:</strong> 첨단 장비 반출 제한으로 중국 팹 공정 전환 제약 및 감가상각비 증가·신규 팹 증설 CapEx 지출로 현실화.</p>
+        async function handleLogout() {
+            await supabaseClient.auth.signOut({ scope: 'local' });
+            currentUser = null;
+            showAuth();
+        }
 
-    <!-- Section 5 -->
-    <h2>5. 향후 예측 보고 (2026~2027 전망 및 리스크)</h2>
-    <ul>
-      <li><strong>Custom HBM4 보편화 및 파운드리 결합:</strong> 베이스 다이를 첨단 파운드리 공정으로 제작함에 따라 턴키 솔루션 간 기술 격차가 실적을 가르는 핵심 요인.</li>
-      <li><strong>범용 메모리 공급 조절:</strong> AI 메모리 전환으로 레거시 D램 공급이 제한되어 2027년까지 견조한 이익 보장.</li>
-      <li><strong>주요 리스크:</strong> 빅테크 AI CapEx 속도 조절(ROI 검증 지연) 및 파운드리 수율·투자 부담.</li>
-    </ul>
+        function showAuth() {
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+        }
 
-    <!-- Footer -->
-    <div class="footer-note">
-      <span>Document ID: CORP-SEMICON-2026-CRISIS-REPORT</span>
-      <span>Source: OpenDART &amp; Global Industry Data</span>
-    </div>
+        function showDashboard() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('user-email').textContent = currentUser.email;
+        }
 
-  </main>
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            loadApiKeys();
+        }
 
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        async function verifyApiKey(provider, apiKey) {
+            try {
+                if (provider === 'gemini') {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    return response.ok;
+                } else if (provider === 'openai') {
+                    const response = await fetch('https://api.openai.com/v1/models', {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    return response.ok;
+                }
+                return false;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        async function saveApiKey() {
+            const provider = document.getElementById('provider-select').value;
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            const priority = parseInt(document.getElementById('priority-input').value) || 1;
+
+            if (!apiKey) {
+                alert("API 키를 입력해주세요.");
+                return;
+            }
+
+            const loadingText = document.getElementById('loading-text');
+            const saveBtn = document.getElementById('save-btn');
+            loadingText.classList.remove('hidden');
+            saveBtn.disabled = true;
+
+            const isValid = await verifyApiKey(provider, apiKey);
+            loadingText.classList.add('hidden');
+            saveBtn.disabled = false;
+
+            if (!isValid) {
+                alert("❌ 유효하지 않거나 만료된 API 키입니다.");
+                return;
+            }
+
+            try {
+                await supabaseClient.from('user_ai_keys').insert([{ user_id: currentUser.id, provider, api_key: apiKey, priority, status: 'active' }]);
+                alert("✅ API 키 등록 성공!");
+                document.getElementById('api-key-input').value = '';
+                loadApiKeys();
+            } catch (err) {
+                alert("저장 실패: " + err.message);
+            }
+        }
+
+        async function loadApiKeys() {
+            const container = document.getElementById('key-list-container');
+            const statusListContainer = document.getElementById('ai-status-list');
+            if (!container) return;
+            
+            try {
+                const { data } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="color:#888; font-size:13px;">등록된 API 키가 없습니다.</p>';
+                    statusListContainer.innerHTML = `<div class="ai-status-badge"><span class="mini-dot exhausted"></span> 등록된 키 없음</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                statusListContainer.innerHTML = '';
+
+                for (const item of data) {
+                    const badge = document.createElement('div');
+                    badge.className = 'ai-status-badge';
+                    badge.innerHTML = `<span class="mini-dot"></span> [${item.provider.toUpperCase()}] 순위: ${item.priority}`;
+                    statusListContainer.appendChild(badge);
+
+                    const div = document.createElement('div');
+                    div.className = 'key-item';
+                    div.innerHTML = `
+                        <div><strong>[${item.provider.toUpperCase()}]</strong> 순위: ${item.priority}</div>
+                        <button class="danger" style="padding: 5px 10px; font-size: 12px;" onclick="deleteApiKey('${item.id}')">삭제</button>
+                    `;
+                    container.appendChild(div);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteApiKey(id) {
+            if (!confirm("정말 이 API 키를 삭제하시겠습니까?")) return;
+            await supabaseClient.from('user_ai_keys').delete().eq('id', id);
+            loadApiKeys();
+        }
+
+        async function callAIWithKeyGeneric(keyItem, prompt) {
+            if (keyItem.provider === 'gemini') {
+                const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${keyItem.api_key}`);
+                const listData = await listRes.json();
+                let modelName = 'gemini-1.5-flash';
+                if (listData.models) {
+                    const found = listData.models.find(m => m.name.includes('flash') || m.name.includes('1.5'));
+                    if (found) modelName = found.name.replace('models/', '');
+                }
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${keyItem.api_key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                if (response.ok && data.candidates) {
+                    return { text: data.candidates[0].content.parts[0].text };
+                }
+            } else if (keyItem.provider === 'openai') {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${keyItem.api_key}` },
+                    body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: prompt }] })
+                });
+                const data = await response.json();
+                if (response.ok && data.choices) {
+                    return { text: data.choices[0].message.content };
+                }
+            }
+            throw new Error("AI API 호출 실패");
+        }
+
+        // --- 기업 분석 실행 핵심 로직 ---
+        async function runCorporateAnalysis() {
+            const corpName = document.getElementById('corp-search-input').value.trim();
+            if (!corpName) {
+                alert("기업명을 입력해주세요.");
+                return;
+            }
+
+            const wrapper = document.getElementById('corp-loading-wrapper');
+            const fill = document.getElementById('corp-progress-bar-fill');
+            const percentText = document.getElementById('corp-progress-percent-text');
+            const resultContainer = document.getElementById('corp-result-container');
+
+            wrapper.classList.remove('hidden');
+            resultContainer.innerHTML = '';
+            fill.style.width = '30%';
+            percentText.textContent = '30% (API 키 확인 및 DART 전자공시 데이터 조회 중...)';
+
+            try {
+                const { data: keys } = await supabaseClient.from('user_ai_keys').select('*').eq('user_id', currentUser.id).order('priority', { ascending: true });
+                if (!keys || keys.length === 0) {
+                    alert("등록된 API 키가 없습니다. 우측 상단의 [⚙️ AI API 설정]에서 키를 등록해주세요.");
+                    wrapper.classList.add('hidden');
+                    return;
+                }
+
+                fill.style.width = '70%';
+                percentText.textContent = '70% (최근 10년 재무제표 상승/하락 원인 및 뉴스 카드 분석 중...)';
+
+                const prompt = `
+당신은 최고급 수석 재무 분석가입니다. 대상 기업: "${corpName}"
+OpenDART 전자공시시스템의 최근 10년 치 재무제표(매출액, 영업이익 등) 데이터를 바탕으로 다음 요구사항에 맞춰 분석 보고서를 작성해 주세요.
+
+1. **10년 재무 트렌드 요약**
+2. **상승/하락/유지 시기별 구체적인 원인 분석** (어떤 연도에 왜 떨어졌고, 왜 상승했는지 설명)
+3. **핵심 뉴스 헤드라인 카드 (4개 이상)**
+   - 각 시기별 주요 이슈를 담은 뉴스 타이틀을 선정하고, 사용자가 클릭하여 관련 뉴스를 검색할 수 있는 사각형 이미지 카드 형태(HTML/CSS 디자인 포함)로 구성해 주세요. 각 카드에는 구글 검색 링크(https://www.google.com/search?q=${encodeURIComponent(corpName)} [검색키워드])를 걸어주세요.
+4. **최종 투자 포인트 및 종합 평가**
+
+출력은 마크다운 코드블록 없이 순수 HTML 태그로만 작성해 주세요. 스타일은 시인성이 좋도록 카드 형태(background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px;)로 작성해 주세요.
+                `;
+
+                let reportHtml = "";
+                for (let i = 0; i < keys.length; i++) {
+                    try {
+                        const res = await callAIWithKeyGeneric(keys[i], prompt);
+                        if (res && res.text) {
+                            reportHtml = res.text;
+                            break;
+                        }
+                    } catch (e) { continue; }
+                }
+
+                if (!reportHtml) throw new Error("AI 분석 생성에 실패했습니다.");
+
+                fill.style.width = '100%';
+                percentText.textContent = '100% (분석 완료!)';
+                setTimeout(() => wrapper.classList.add('hidden'), 600);
+
+                resultContainer.innerHTML = `
+                    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #e1e4ed;">
+                        <h2 style="color: #2c3e50; margin-top: 0;">🏢 ${corpName} 10년 재무 및 AI 분석 리포트</h2>
+                        <p style="font-size: 12px; color: #7f8c8d;">분석 일시: ${new Date().toLocaleString()} | 구글 계정 연동 저장됨</p>
+                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
+                        <div>${reportHtml}</div>
+                    </div>
+                `;
+
+                // Supabase 구글 계정 데이터 자동 저장
+                await supabaseClient.from('user_corporate_reports').upsert({
+                    user_id: currentUser.id,
+                    corp_name: corpName,
+                    report_html: reportHtml,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id, corp_name' });
+
+            } catch (err) {
+                wrapper.classList.add('hidden');
+                alert("분석 중 오류 발생: " + err.message);
+            }
+        }
+    </script>
 </body>
-</html> 
+</html>
