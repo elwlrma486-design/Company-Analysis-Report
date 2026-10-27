@@ -337,9 +337,9 @@
             loadApiKeys();
         }
 
-        /* v1 및 v1beta 엔드포인트를 모두 지원하는 안정적인 AI 통신 로직 */
+        /* 유효한 최신 모델들만 순차적으로 안전하게 탐색하는 통신 로직 */
         async function callGeminiDirectly(apiKey, prompt) {
-            const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
+            const models = ['gemini-1.5-flash', 'gemini-1.5-pro'];
             const versions = ['v1', 'v1beta'];
             let lastErrorMsg = "";
 
