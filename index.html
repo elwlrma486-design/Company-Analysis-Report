@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- JSZip (DART 고유번호 XML 압축해제용) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- FontAwesome 아이콘 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -55,18 +57,18 @@
 
         <!-- Tab 1: 분석 메인 탭 -->
         <div id="tab-analysis-content" class="space-y-8">
-            <!-- 검색 영역 (연도 선택 제거 완료) -->
+            <!-- 검색 영역 -->
             <div class="glass-card rounded-2xl p-6 relative z-40">
                 <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-building text-blue-400"></i> 국내 상장사 및 공시 기업 검색 (최근 10개년 자동 연동)
+                    <i class="fa-solid fa-building text-blue-400"></i> 국내 전체 상장/비상장 기업 검색 (최근 10개년 자동 연동)
                 </h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- 드롭다운 검색창 -->
                     <div class="md:col-span-2 relative">
-                        <label class="block text-xs font-semibold text-slate-400 mb-1">기업명 또는 종목코드</label>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1" id="search-label-text">기업명 또는 종목코드 (전체 기업 DB 로딩 중...)</label>
                         <div class="relative">
-                            <input type="text" id="company-search-input" oninput="handleSearchInput(this.value)" placeholder="예: 삼성전자, SK하이닉스, DB하이텍, 005930..." 
+                            <input type="text" id="company-search-input" oninput="handleSearchInput(this.value)" placeholder="예: 삼성전자, SK하이닉스, NAVER, 000660..." 
                                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
                             <i class="fa-solid fa-chevron-down absolute right-4 top-3.5 text-slate-500 text-xs pointer-events-none"></i>
                         </div>
@@ -90,11 +92,21 @@
                 </div>
             </div>
 
-            <!-- 로딩 상태 스피너 -->
-            <div id="loading-spinner" class="hidden glass-card rounded-2xl p-12 text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
-                <h3 class="text-lg font-bold text-slate-200" id="loading-status-text">OpenDART 10개년 재무제표 수집 중...</h3>
-                <p class="text-xs text-slate-400 mt-2">과거 10개년 실적 데이터를 연이어 수집하고 있습니다. 잠시만 기다려주세요.</p>
+            <!-- 로딩 상태 스피너 & 남은 시간 타이머 바 -->
+            <div id="loading-spinner" class="hidden glass-card rounded-2xl p-10 text-center space-y-4">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
+                <h3 class="text-base font-bold text-slate-200" id="loading-status-text">OpenDART 10개년 재무제표 수집 중...</h3>
+                
+                <!-- 타이머 및 프로그레스 바 -->
+                <div class="max-w-md mx-auto space-y-2">
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span id="timer-text">예상 남은 시간: 계산 중...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div id="progress-bar-fill" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- 분석 결과 대시보드 -->
@@ -129,7 +141,7 @@
 
                 <!-- 2. 10개년 시각화 차트 & 연도별 재무 추이 표 -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- 10개년 추이 차트 -->
+                    <!-- 차트 -->
                     <div class="glass-card rounded-2xl p-6">
                         <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-chart-line text-emerald-400"></i> 10개년 매출액 & 영업이익 추이
@@ -139,7 +151,7 @@
                         </div>
                     </div>
 
-                    <!-- 10개년 재무 요약 테이블 -->
+                    <!-- 테이블 -->
                     <div class="glass-card rounded-2xl p-6">
                         <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-table text-indigo-400"></i> 10개년 연도별 실적 요약 (단위: 억 원)
@@ -184,7 +196,7 @@
             </div>
         </div>
 
-        <!-- Tab 2: 분석 히스토리 탭 -->
+        <!-- Tab 2: 히스토리 탭 -->
         <div id="tab-history-content" class="hidden space-y-4">
             <div class="glass-card rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-6">
@@ -254,7 +266,7 @@
         window.addEventListener('DOMContentLoaded', async () => {
             loadSavedKeys();
             initSupabase();
-            loadCorpCodes();
+            await fetchAllCorpCodesFromDART();
             loadHistoryFromSupabase();
         });
 
@@ -306,7 +318,62 @@
             }
         }
 
-        function loadCorpCodes() {
+        // OpenDART 전체 기업 고유번호(Corp Code) XML 실시간 로딩
+        async function fetchAllCorpCodesFromDART() {
+            const dartKey = localStorage.getItem('opendart_api_key');
+            const labelEl = document.getElementById('search-label-text');
+
+            if (!dartKey) {
+                labelEl.textContent = "기업명 또는 종목코드 (API 키를 설정하면 전체 기업 검색 가능)";
+                // 기본 fallback 리스트
+                corpCodeList = [
+                    { corp_code: '00126380', corp_name: '삼성전자', stock_code: '005930' },
+                    { corp_code: '00164779', corp_name: 'SK하이닉스', stock_code: '000660' },
+                    { corp_code: '00401731', corp_name: 'LG에너지솔루션', stock_code: '373220' },
+                    { corp_code: '00126186', corp_name: 'LG전자', stock_code: '066570' },
+                    { corp_code: '00266961', corp_name: 'DB하이텍', stock_code: '000990' },
+                    { corp_code: '00258801', corp_name: '카카오', stock_code: '035720' },
+                    { corp_code: '00164803', corp_name: 'NAVER', stock_code: '035420' },
+                    { corp_code: '00164742', corp_name: '현대자동차', stock_code: '005380' }
+                ];
+                return;
+            }
+
+            try {
+                labelEl.textContent = "국내 전체 상장/비상장 기업 DB 로딩 중...";
+                const url = `https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${dartKey}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                
+                const response = await fetch(proxyUrl);
+                const blob = await response.blob();
+                
+                const zip = new JSZip();
+                const zipContent = await zip.loadAsync(blob);
+                const xmlFile = Object.values(zipContent.files)[0];
+                const xmlText = await xmlFile.async("text");
+
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const list = xmlDoc.getElementsByTagName("list");
+
+                corpCodeList = [];
+                for (let i = 0; i < list.length; i++) {
+                    const corpCode = list[i].getElementsByTagName("corp_code")[0]?.textContent || "";
+                    const corpName = list[i].getElementsByTagName("corp_name")[0]?.textContent || "";
+                    const stockCode = list[i].getElementsByTagName("stock_code")[0]?.textContent.trim() || "";
+                    if (stockCode) { // 상장사 우선
+                        corpCodeList.push({ corp_code: corpCode, corp_name: corpName, stock_code: stockCode });
+                    }
+                }
+                labelEl.textContent = `기업명 또는 종목코드 (국내 상장사 ${corpCodeList.length}개 연동 완료)`;
+            } catch (err) {
+                console.error("전체 기업 DB 로드 실패:", err);
+                labelEl.textContent = "기업명 또는 종목코드 (기본 대기업 DB 사용 중)";
+                loadCorpCodesFallback();
+            }
+        }
+
+        function loadCorpCodesFallback() {
             corpCodeList = [
                 { corp_code: '00126380', corp_name: '삼성전자', stock_code: '005930' },
                 { corp_code: '00164779', corp_name: 'SK하이닉스', stock_code: '000660' },
@@ -327,7 +394,7 @@
             const matches = corpCodeList.filter(c => 
                 c.corp_name.toLowerCase().includes(cleanQuery) || 
                 (c.stock_code && c.stock_code.includes(cleanQuery))
-            ).slice(0, 15);
+            ).slice(0, 20);
 
             if (matches.length === 0) {
                 dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center">검색 결과가 없습니다.</div>`;
@@ -336,7 +403,7 @@
                     <div onclick="selectCompany('${c.corp_code}', '${c.corp_name}', '${c.stock_code}')" 
                         class="p-3 hover:bg-slate-800 cursor-pointer border-b border-slate-800/50 flex justify-between items-center transition">
                         <span class="text-xs font-semibold text-white">${c.corp_name}</span>
-                        <span class="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${c.stock_code ? c.stock_code : '비상장'}</span>
+                        <span class="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${c.stock_code}</span>
                     </div>
                 `).join('');
             }
@@ -354,7 +421,7 @@
             document.getElementById('selected-company-info').classList.remove('hidden');
         }
 
-        // 10개년 자동 연동 분석 핵심 함수
+        // 10개년 재무 데이터 수집 및 타이머/프로그레스 바 구현
         async function start10YearFinancialAnalysis() {
             const dartKey = localStorage.getItem('opendart_api_key');
             const geminiKey = localStorage.getItem('gemini_api_key');
@@ -373,59 +440,85 @@
             const spinner = document.getElementById('loading-spinner');
             const dashboard = document.getElementById('dashboard-content');
             const statusText = document.getElementById('loading-status-text');
+            const timerText = document.getElementById('timer-text');
+            const percentText = document.getElementById('progress-percent');
+            const fillBar = document.getElementById('progress-bar-fill');
 
             spinner.classList.remove('hidden');
             dashboard.classList.add('hidden');
 
-            const currentYear = new Date().getFullYear();
-            const startYear = currentYear - 10;
+            const currentYear = 2026; // 기준 년도
+            const targetYears = [];
+            for (let y = currentYear - 10; y < currentYear; y++) { targetYears.push(y); } // 최근 10개년 (2016~2025)
+
             let yearlyDataList = [];
+            let totalSteps = targetYears.length + 1; // 연도별 + AI분석
+            let currentStep = 0;
+
+            const startTime = Date.now();
+
+            function updateProgress(step, msg) {
+                currentStep = step;
+                const percent = Math.min(100, Math.round((currentStep / totalSteps) * 100));
+                fillBar.style.width = percent + '%';
+                percentText.textContent = percent + '%';
+                statusText.textContent = msg;
+
+                const elapsed = (Date.now() - startTime) / 1000;
+                if (currentStep > 0) {
+                    const avgPerStep = elapsed / currentStep;
+                    const remainingSteps = totalSteps - currentStep;
+                    const remainSec = Math.max(1, Math.round(avgPerStep * remainingSteps));
+                    timerText.textContent = `예상 남은 시간: 약 ${remainSec}초 (${currentStep}/${totalSteps})`;
+                } else {
+                    timerText.textContent = `예상 남은 시간: 계산 중...`;
+                }
+            }
 
             try {
-                // 최근 10개년 연도별 반복 호출 (2015 ~ 2024 등)
-                for (let y = startYear; y < currentYear; y++) {
-                    statusText.textContent = `[${selectedCorp.corpName}] ${y}년도 DART 재무제표 수집 중...`;
-                    const dartUrl = `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${dartKey}&corp_code=${selectedCorp.corpCode}&bsns_year=${y}&reprt_code=11011`;
+                for (let i = 0; i < targetYears.length; i++) {
+                    const y = targetYears[i];
+                    updateProgress(i, `[${selectedCorp.corpName}] ${y}년도 DART 재무제표 수집 중...`);
                     
-                    // CORS 우회 프록시 적용
+                    const dartUrl = `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${dartKey}&corp_code=${selectedCorp.corpCode}&bsns_year=${y}&reprt_code=11011`;
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(dartUrl)}`;
                     
                     try {
                         const res = await fetch(proxyUrl);
                         const data = await res.json();
-                        if (data.status === '000' && data.list) {
+                        if (data.status === '000' && data.list && data.list.length > 0) {
                             const parsed = parseSingleYearData(y, data.list);
                             if (parsed.revenue > 0) yearlyDataList.push(parsed);
                         }
-                    } catch(innerErr) {
-                        console.warn(`${y}년 데이터 수집 스킵:`, innerErr);
+                    } catch(err) {
+                        console.warn(`${y}년 데이터 스킵:`, err);
                     }
                 }
 
                 if (yearlyDataList.length === 0) {
-                    throw new Error('수집된 10개년 재무 데이터가 없습니다. (API 키 오류 또는 미공시 기업)');
+                    throw new Error('수집된 10개년 재무 데이터가 없습니다. (API 키 오류 또는 해당 기업 미공시)');
                 }
 
-                // 최신 연도 기준 정렬 및 최근 데이터 추출
                 yearlyDataList.sort((a, b) => a.year - b.year);
                 const latest = yearlyDataList[yearlyDataList.length - 1];
 
                 renderLatestMetricsAndTable(latest, yearlyDataList);
                 render10YearChart(yearlyDataList);
 
-                statusText.textContent = `Gemini AI가 [${selectedCorp.corpName}] 10개년 시계열 트렌드 분석 중...`;
+                updateProgress(targetYears.length, `Gemini AI가 [${selectedCorp.corpName}] 10개년 시계열 트렌드 분석 중...`);
                 const aiReport = await callGemini10YearAnalysis(geminiKey, selectedCorp.corpName, yearlyDataList);
 
                 document.getElementById('ai-report-container').innerHTML = aiReport;
 
-                spinner.classList.add('hidden');
+                updateProgress(totalSteps, '분석 완료!');
+                setTimeout(() => { spinner.classList.add('hidden'); }, 500);
                 dashboard.classList.remove('hidden');
 
                 saveHistoryToSupabase(selectedCorp.corpName, latest, aiReport);
 
             } catch (err) {
                 spinner.classList.add('hidden');
-                alert('10년치 분석 중 오류 발생: ' + err.message);
+                alert('분석 중 오류 발생: ' + err.message);
             }
         }
 
